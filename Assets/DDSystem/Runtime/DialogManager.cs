@@ -38,6 +38,7 @@ namespace Doublsb.Dialog
         //================================================
         [Header("Game Objects")]
         public GameObject Printer;
+
         public GameObject Characters;
 
         [Header("UI Objects")]
@@ -45,6 +46,7 @@ namespace Doublsb.Dialog
 
         [Header("Audio Objects")]
         public AudioSource SEAudio;
+
         public AudioSource CallAudio;
 
         [Header("Preference")]
@@ -52,6 +54,7 @@ namespace Doublsb.Dialog
 
         [Header("Selector")]
         public GameObject Selector;
+
         public GameObject SelectorItem;
         public Text SelectorItemText;
 
@@ -75,13 +78,15 @@ namespace Doublsb.Dialog
         //================================================
         //Public Method
         //================================================
+
         #region Show & Hide
+
         public void Show(DialogData Data)
         {
             _current_Data = Data;
             _find_character(Data.Character);
 
-            if(_current_Character != null)
+            if (_current_Character != null)
                 _emote("Normal");
 
             _textingRoutine = StartCoroutine(Activate());
@@ -97,19 +102,22 @@ namespace Doublsb.Dialog
             switch (state)
             {
                 case State.Active:
-                    StartCoroutine(_skip()); break;
+                    StartCoroutine(_skip());
+                    break;
 
                 case State.Wait:
-                    if(_current_Data.SelectList.Count <= 0) Hide(); break;
+                    if (_current_Data.SelectList.Count <= 0)
+                        Hide();
+                    break;
             }
         }
 
         public void Hide()
         {
-            if(_textingRoutine != null)
+            if (_textingRoutine != null)
                 StopCoroutine(_textingRoutine);
 
-            if(_printingRoutine != null)
+            if (_printingRoutine != null)
                 StopCoroutine(_printingRoutine);
 
             Printer.SetActive(false);
@@ -124,6 +132,7 @@ namespace Doublsb.Dialog
                 _current_Data.Callback = null;
             }
         }
+
         #endregion
 
         #region Selector
@@ -140,10 +149,11 @@ namespace Doublsb.Dialog
 
         public void Play_ChatSE()
         {
-            if (_current_Character != null)
+            if (_current_Character != null && _current_Character.ChatSE.Length > 0)
             {
                 SEAudio.clip = _current_Character.ChatSE[UnityEngine.Random.Range(0, _current_Character.ChatSE.Length)];
-                SEAudio.Play();
+                if (SEAudio.clip != null)
+                    SEAudio.Play();
             }
         }
 
@@ -169,7 +179,8 @@ namespace Doublsb.Dialog
             {
                 case "up":
                     _currentDelay -= 0.25f;
-                    if (_currentDelay <= 0) _currentDelay = 0.001f;
+                    if (_currentDelay <= 0)
+                        _currentDelay = 0.001f;
                     break;
 
                 case "down":
@@ -199,7 +210,8 @@ namespace Doublsb.Dialog
             if (name != string.Empty)
             {
                 Transform Child = Characters.transform.Find(name);
-                if (Child != null) _current_Character = Child.GetComponent<Character>();
+                if (Child != null)
+                    _current_Character = Child.GetComponent<Character>();
             }
         }
 
@@ -212,8 +224,10 @@ namespace Doublsb.Dialog
             Printer.SetActive(true);
 
             Characters.SetActive(_current_Character != null);
-            foreach (Transform item in Characters.transform) item.gameObject.SetActive(false);
-            if(_current_Character != null) _current_Character.gameObject.SetActive(true);
+            foreach (Transform item in Characters.transform)
+                item.gameObject.SetActive(false);
+            if (_current_Character != null)
+                _current_Character.gameObject.SetActive(true);
         }
 
         private void _init_selector()
@@ -229,8 +243,9 @@ namespace Doublsb.Dialog
                     _add_selectorItem(i);
                 }
             }
-                
-            else Selector.SetActive(false);
+
+            else
+                Selector.SetActive(false);
         }
 
         private void _clear_selector()
@@ -261,7 +276,10 @@ namespace Doublsb.Dialog
                 Show(Data);
                 _init_selector();
 
-                while (state != State.Deactivate) { yield return null; }
+                while (state != State.Deactivate)
+                {
+                    yield return null;
+                }
             }
         }
 
@@ -318,7 +336,8 @@ namespace Doublsb.Dialog
 
         private IEnumerator _waitInput()
         {
-            while (!Input.GetMouseButtonDown(0)) yield return null;
+            while (!Input.GetMouseButtonDown(0))
+                yield return null;
             _currentDelay = _lastDelay;
         }
 
@@ -331,8 +350,10 @@ namespace Doublsb.Dialog
                 _current_Data.PrintText += Text[i];
                 Printer_Text.text = _current_Data.PrintText + _current_Data.Format.CloseTagger;
 
-                if (Text[i] != ' ') Play_ChatSE();
-                if (_currentDelay != 0) yield return new WaitForSeconds(_currentDelay);
+                if (Text[i] != ' ')
+                    Play_ChatSE();
+                if (_currentDelay != 0)
+                    yield return new WaitForSeconds(_currentDelay);
             }
 
             _current_Data.PrintText += _current_Data.Format.CloseTagger;
@@ -340,7 +361,10 @@ namespace Doublsb.Dialog
 
         public void _emote(string Text)
         {
-            _current_Character.GetComponent<Image>().sprite = _current_Character.Emotion.Data[Text];
+            if(_current_Character != null && _current_Character.Emotions.TryGetValue(Text, out var sprite))
+                _current_Character.GetComponent<Image>().sprite = sprite;
+            else
+                Debug.LogError($"Emotion not found: {Text} for {_current_Character}");
         }
 
         private IEnumerator _skip()
@@ -348,12 +372,12 @@ namespace Doublsb.Dialog
             if (_current_Data.isSkippable)
             {
                 _currentDelay = 0;
-                while (state != State.Wait) yield return null;
+                while (state != State.Wait)
+                    yield return null;
                 _currentDelay = Delay;
             }
         }
 
         #endregion
-
     }
 }
