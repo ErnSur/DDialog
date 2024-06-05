@@ -1,0 +1,18 @@
+{
+    "name": "DDialog.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:8f031fd9a728e4818ab3f407fe9ecbca"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
