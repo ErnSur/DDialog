@@ -1,8 +1,8 @@
 namespace Doublsb.Dialog
 {
-    using System.Collections;
+    using System.Collections;using UnityEngine;
 
-    internal class ColorCommandHandler : IDialogCommandHandler
+    internal class ColorCommandHandler : MonoBehaviour, IDialogCommandHandler
     {
         public string Identifier => "color";
 

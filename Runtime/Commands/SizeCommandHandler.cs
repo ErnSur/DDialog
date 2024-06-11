@@ -1,14 +1,9 @@
 namespace Doublsb.Dialog
 {
     using System.Collections;
+    using UnityEngine;
 
-    interface IDialogCommandHandler
-    {
-        string Identifier { get; }
-        IEnumerator PerformAction(string context, DialogData dialogData);
-    }
-    
-    public class SizeCommandHandler : IDialogCommandHandler
+    public class SizeCommandHandler : MonoBehaviour, IDialogCommandHandler
     {
         public string Identifier => "size";
         public IEnumerator PerformAction(string context, DialogData dialogData)

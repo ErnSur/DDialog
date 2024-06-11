@@ -1,6 +1,6 @@
 namespace Doublsb.Dialog
 {
-    public enum Command
+    public enum CommandId
     {
         print,
         color,

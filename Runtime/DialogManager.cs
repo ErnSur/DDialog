@@ -5,23 +5,18 @@ using UnityEngine.UI;
 
 namespace Doublsb.Dialog
 {
+    using System.Linq;
+
     public class DialogManager : MonoBehaviour
     {
-        //================================================
-        //Public Variable
-        //================================================
         [Header("Game Objects")]
         public GameObject Printer;
-
-        private IDialogActorManager _actorManager;
 
         [Header("UI Objects")]
         public Text Printer_Text;
 
         [Header("Audio Objects")]
         public AudioSource SEAudio;
-
-        public AudioSource CallAudio;
 
         [Header("Preference")]
         public float Delay = 0.1f;
@@ -38,11 +33,8 @@ namespace Doublsb.Dialog
         [HideInInspector]
         public string Result;
 
-        //================================================
-        //Private Method
-        //================================================
-        private DialogData _current_Data;
-
+        private IDialogActorManager _actorManager;
+        private DialogData _currentData;
         private float _currentDelay;
         private float _lastDelay;
         private Coroutine _textingRoutine;
@@ -50,22 +42,20 @@ namespace Doublsb.Dialog
 
         public AudioClip[] defaultChatSoundEffects;
 
-        private Dictionary<string, IDialogCommandHandler> _commandHandlers = new()
+        private Dictionary<string, IDialogCommandHandler> _commandHandlers;
+
+        private bool _initialized;
+
+        private void Awake() => OneTimeInit();
+
+        private void OneTimeInit()
         {
-            { "size", new SizeCommandHandler() },
-            { "color", new ColorCommandHandler() },
-            // {"speed", new SpeedCommandHandler()},
-            // {"click", new ClickCommandHandler()},
-            // {"close", new CloseCommandHandler()},
-            // {"wait", new WaitCommandHandler()}
-        };
-
-        // private void Awake()
-        // {
-        //     _commandHandlers = GetComponents<IDialogCommandHandler>().ToDictionary(handler => handler.Identifier);
-        //     _commandHandlers["size"] = new SizeCommandHandler();
-        // }
-
+            if (_initialized)
+                return;
+            _actorManager = GetComponent<IDialogActorManager>();
+            _commandHandlers = GetComponents<IDialogCommandHandler>().ToDictionary(handler => handler.Identifier);
+            _initialized = true;
+        }
         //================================================
         //Public Method
         //================================================
@@ -74,7 +64,7 @@ namespace Doublsb.Dialog
 
         public void Show(DialogData Data)
         {
-            _current_Data = Data;
+            _currentData = Data;
             _textingRoutine = StartCoroutine(Activate());
         }
 
@@ -92,7 +82,7 @@ namespace Doublsb.Dialog
                     break;
 
                 case State.Wait:
-                    if (_current_Data.SelectList.Count <= 0)
+                    if (_currentData.SelectList.Count <= 0)
                         Hide();
                     break;
             }
@@ -112,10 +102,10 @@ namespace Doublsb.Dialog
 
             state = State.Deactivate;
 
-            if (_current_Data.Callback != null)
+            if (_currentData.Callback != null)
             {
-                _current_Data.Callback.Invoke();
-                _current_Data.Callback = null;
+                _currentData.Callback.Invoke();
+                _currentData.Callback = null;
             }
         }
 
@@ -125,7 +115,7 @@ namespace Doublsb.Dialog
 
         public void Select(int index)
         {
-            Result = _current_Data.SelectList.GetByIndex(index).Key;
+            Result = _currentData.SelectList.GetByIndex(index).Key;
             Hide();
         }
 
@@ -138,11 +128,11 @@ namespace Doublsb.Dialog
             var clips = defaultChatSoundEffects;
             if (_actorManager.TryGetChatSoundEffects(out var actorClips))
                 clips = actorClips;
-            if (_current_Data.ChatSoundEffects is { Length: > 0 })
-                clips = _current_Data.ChatSoundEffects;
+            if (_currentData.ChatSoundEffects is { Length: > 0 })
+                clips = _currentData.ChatSoundEffects;
             if (clips == null || clips.Length == 0)
                 return;
-            
+
             SEAudio.clip = clips[UnityEngine.Random.Range(0, clips.Length)];
             if (SEAudio.clip != null)
                 SEAudio.Play();
@@ -186,30 +176,25 @@ namespace Doublsb.Dialog
 
         private void _initialize()
         {
-            _actorManager = GetComponent<IDialogActorManager>();
-            
-            if (!_commandHandlers.ContainsKey("emote"))
-                _commandHandlers["emote"] = gameObject.GetComponent<EmoteCommandHandler>();
-            if(!_commandHandlers.ContainsKey("sound"))
-                _commandHandlers["sound"] = gameObject.GetComponent<SoundCommandHandler>();  
+            OneTimeInit();
             _currentDelay = Delay;
             _lastDelay = 0.1f;
             Printer_Text.text = string.Empty;
 
             Printer.SetActive(true);
 
-            _actorManager.Show(_current_Data.Character);
+            _actorManager.Show(_currentData.ActorId);
         }
 
         private void _init_selector()
         {
             _clear_selector();
 
-            if (_current_Data.SelectList.Count > 0)
+            if (_currentData.SelectList.Count > 0)
             {
                 Selector.SetActive(true);
 
-                for (int i = 0; i < _current_Data.SelectList.Count; i++)
+                for (int i = 0; i < _currentData.SelectList.Count; i++)
                 {
                     _add_selectorItem(i);
                 }
@@ -229,7 +214,7 @@ namespace Doublsb.Dialog
 
         private void _add_selectorItem(int index)
         {
-            SelectorItemText.text = _current_Data.SelectList.GetByIndex(index).Value;
+            SelectorItemText.text = _currentData.SelectList.GetByIndex(index).Value;
 
             var NewItem = Instantiate(SelectorItem, Selector.transform);
             NewItem.GetComponent<Button>().onClick.AddListener(() => Select(index));
@@ -260,35 +245,35 @@ namespace Doublsb.Dialog
 
             state = State.Active;
 
-            foreach (var item in _current_Data.Commands)
+            foreach (var item in _currentData.Commands)
             {
-                if (_commandHandlers.TryGetValue(item.Command.ToString(), out var handler))
+                if (_commandHandlers.TryGetValue(item.CommandId.ToString(), out var handler))
                 {
-                    yield return handler.PerformAction(item.Context, _current_Data);
-                    Debug.Log($"Command {item.Command} Activated!!");
+                    yield return handler.PerformAction(item.Argument, _currentData);
+                    Debug.Log($"Command {item.CommandId} Activated!!");
                     continue;
                 }
 
-                switch (item.Command)
+                switch (item.CommandId)
                 {
-                    case Command.print:
-                        yield return _printingRoutine = StartCoroutine(_print(item.Context));
+                    case CommandId.print:
+                        yield return _printingRoutine = StartCoroutine(_print(item.Argument));
                         break;
 
-                    case Command.speed:
-                        Set_Speed(item.Context);
+                    case CommandId.speed:
+                        Set_Speed(item.Argument);
                         break;
 
-                    case Command.click:
+                    case CommandId.click:
                         yield return _waitInput();
                         break;
 
-                    case Command.close:
+                    case CommandId.close:
                         Hide();
                         yield break;
 
-                    case Command.wait:
-                        yield return new WaitForSeconds(float.Parse(item.Context));
+                    case CommandId.wait:
+                        yield return new WaitForSeconds(float.Parse(item.Argument));
                         break;
                 }
             }
@@ -305,12 +290,12 @@ namespace Doublsb.Dialog
 
         private IEnumerator _print(string Text)
         {
-            _current_Data.PrintText += _current_Data.Format.OpenTagger;
+            _currentData.PrintText += _currentData.Format.OpenTagger;
 
             for (int i = 0; i < Text.Length; i++)
             {
-                _current_Data.PrintText += Text[i];
-                Printer_Text.text = _current_Data.PrintText + _current_Data.Format.CloseTagger;
+                _currentData.PrintText += Text[i];
+                Printer_Text.text = _currentData.PrintText + _currentData.Format.CloseTagger;
 
                 if (Text[i] != ' ')
                     Play_ChatSE();
@@ -318,12 +303,12 @@ namespace Doublsb.Dialog
                     yield return new WaitForSeconds(_currentDelay);
             }
 
-            _current_Data.PrintText += _current_Data.Format.CloseTagger;
+            _currentData.PrintText += _currentData.Format.CloseTagger;
         }
 
         private IEnumerator _skip()
         {
-            if (_current_Data.isSkippable)
+            if (_currentData.CanBeSkipped)
             {
                 _currentDelay = 0;
                 while (state != State.Wait)

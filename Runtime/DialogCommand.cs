@@ -2,13 +2,13 @@ namespace Doublsb.Dialog
 {
     public class DialogCommand
     {
-        public Command Command;
-        public string Context;
+        public readonly CommandId CommandId;
+        public readonly string Argument;
 
-        public DialogCommand(Command command, string context = "")
+        public DialogCommand(CommandId commandId, string argument = "")
         {
-            Command = command;
-            Context = context;
+            CommandId = commandId;
+            Argument = argument;
         }
     }
 }

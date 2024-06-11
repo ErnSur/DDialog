@@ -10,82 +10,75 @@ namespace Doublsb.Dialog
     /// </summary>
     public class DialogData
     {
-        //================================================
-        //Public Variable
-        //================================================
-        public string Character;
-        public List<DialogCommand> Commands = new List<DialogCommand>();
-        public DialogSelect SelectList = new DialogSelect();
-        public DialogFormat Format = new DialogFormat();
-        public AudioClip[] ChatSoundEffects;
+        public readonly string ActorId;
+        public readonly List<DialogCommand> Commands = new List<DialogCommand>();
+        public readonly DialogSelect SelectList = new DialogSelect();
+        public readonly DialogFormat Format = new DialogFormat();
+        public readonly AudioClip[] ChatSoundEffects;
 
         public string PrintText = string.Empty;
 
-        public bool isSkippable = true;
-        public UnityAction Callback = null;
+        public readonly bool CanBeSkipped;
+        public UnityAction Callback;
 
-        //================================================
-        //Public Method
-        //================================================
-        public DialogData(string originalString, string character = "", UnityAction callback = null, bool isSkipable = true)
+        public DialogData(string originalString, string actorId = "", UnityAction callback = null,
+            bool canBeSkipped = true, AudioClip[] chatSoundEffects = null)
         {
-            _convert(originalString);
+            Initialize(originalString);
 
-            this.isSkippable = isSkipable;
-            this.Callback = callback;
-            this.Character = character;
+            ChatSoundEffects = chatSoundEffects;
+            CanBeSkipped = canBeSkipped;
+            Callback = callback;
+            ActorId = actorId;
         }
 
-        //================================================
-        //Private Method
-        //================================================
-        private void _convert(string originalString)
+        private void Initialize(string textWithCommands)
         {
-            string printText = string.Empty;
+            var printText = string.Empty;
 
-            for (int i = 0; i < originalString.Length; i++)
+            for (int i = 0; i < textWithCommands.Length; i++)
             {
-                if (originalString[i] != '/') printText += originalString[i];
-
+                if (textWithCommands[i] != '/')
+                    printText += textWithCommands[i];
                 else // If find '/'
                 {
                     // Convert last printText to command
                     if (printText != string.Empty)
                     {
-                        Commands.Add(new DialogCommand(Command.print, printText));
+                        Commands.Add(new DialogCommand(CommandId.print, printText));
                         printText = string.Empty;
                     }
 
-                    // Substring /CommandSyntex/
-                    var nextSlashIndex = originalString.IndexOf('/', i + 1);
-                    string commandSyntex = originalString.Substring(i + 1, nextSlashIndex - i - 1);
+                    // Extract the command content, (i.e., "/commandName:argument/")
+                    var nextSlashIndex = textWithCommands.IndexOf('/', i + 1);
+                    var commandContent = textWithCommands.Substring(i + 1, nextSlashIndex - i - 1);
 
-                    // Add converted command
-                    var com = _convert_Syntex_To_Command(commandSyntex);
-                    if (com != null) Commands.Add(com);
+                    // Add new command
+                    if(TryParseCommand(commandContent,out var command))
+                        Commands.Add(command);
 
-                    // Move i
+                    // Move loop index
                     i = nextSlashIndex;
                 }
             }
 
-            if (printText != string.Empty) Commands.Add(new DialogCommand(Command.print, printText));
+            if (printText != string.Empty)
+                Commands.Add(new DialogCommand(CommandId.print, printText));
         }
 
-        private DialogCommand _convert_Syntex_To_Command(string text)
+        private static bool TryParseCommand(string text, out DialogCommand command)
         {
-            var spliter = text.Split(':');
+            var segments = text.Split(':');
 
-            Command command;
-            if (Enum.TryParse(spliter[0], out command))
+            if (Enum.TryParse(segments[0], out CommandId commandId))
             {
-                if (spliter.Length >= 2) return new DialogCommand(command, spliter[1]);
-                else return new DialogCommand(command);
+                command = segments.Length >= 2 ? new DialogCommand(commandId, segments[1]) : new DialogCommand(commandId);
+                return true;
             }
-            else
-                Debug.LogError("Cannot parse to commands");
 
-            return null;
+            Debug.LogError($"Cannot parse command content: {text}");
+            command = null;
+            return false;
         }
     }
 }
