@@ -17,6 +17,7 @@ namespace Doublsb.Dialog
         public List<DialogCommand> Commands = new List<DialogCommand>();
         public DialogSelect SelectList = new DialogSelect();
         public DialogFormat Format = new DialogFormat();
+        public AudioClip[] ChatSoundEffects;
 
         public string PrintText = string.Empty;
 

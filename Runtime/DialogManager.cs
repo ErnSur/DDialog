@@ -1,33 +1,7 @@
-﻿/*
-The MIT License
-
-Copyright (c) 2020 DoublSB
-https://github.com/DoublSB/UnityDialogAsset
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 namespace Doublsb.Dialog
 {
@@ -39,7 +13,7 @@ namespace Doublsb.Dialog
         [Header("Game Objects")]
         public GameObject Printer;
 
-        public GameObject Characters;
+        private IDialogActorManager _actorManager;
 
         [Header("UI Objects")]
         public Text Printer_Text;
@@ -67,13 +41,30 @@ namespace Doublsb.Dialog
         //================================================
         //Private Method
         //================================================
-        private Character _current_Character;
         private DialogData _current_Data;
 
         private float _currentDelay;
         private float _lastDelay;
         private Coroutine _textingRoutine;
         private Coroutine _printingRoutine;
+
+        public AudioClip[] defaultChatSoundEffects;
+
+        private Dictionary<string, IDialogCommandHandler> _commandHandlers = new()
+        {
+            { "size", new SizeCommandHandler() },
+            { "color", new ColorCommandHandler() },
+            // {"speed", new SpeedCommandHandler()},
+            // {"click", new ClickCommandHandler()},
+            // {"close", new CloseCommandHandler()},
+            // {"wait", new WaitCommandHandler()}
+        };
+
+        // private void Awake()
+        // {
+        //     _commandHandlers = GetComponents<IDialogCommandHandler>().ToDictionary(handler => handler.Identifier);
+        //     _commandHandlers["size"] = new SizeCommandHandler();
+        // }
 
         //================================================
         //Public Method
@@ -84,11 +75,6 @@ namespace Doublsb.Dialog
         public void Show(DialogData Data)
         {
             _current_Data = Data;
-            _find_character(Data.Character);
-
-            if (_current_Character != null)
-                _emote("Normal");
-
             _textingRoutine = StartCoroutine(Activate());
         }
 
@@ -121,7 +107,7 @@ namespace Doublsb.Dialog
                 StopCoroutine(_printingRoutine);
 
             Printer.SetActive(false);
-            Characters.SetActive(false);
+            _actorManager.HideAll();
             Selector.SetActive(false);
 
             state = State.Deactivate;
@@ -149,24 +135,17 @@ namespace Doublsb.Dialog
 
         public void Play_ChatSE()
         {
-            if (_current_Character != null && _current_Character.ChatSE.Length > 0)
-            {
-                SEAudio.clip = _current_Character.ChatSE[UnityEngine.Random.Range(0, _current_Character.ChatSE.Length)];
-                if (SEAudio.clip != null)
-                    SEAudio.Play();
-            }
-        }
-
-        public void Play_CallSE(string SEname)
-        {
-            if (_current_Character != null)
-            {
-                var FindSE
-                    = Array.Find(_current_Character.CallSE, (SE) => SE.name == SEname);
-
-                CallAudio.clip = FindSE;
-                CallAudio.Play();
-            }
+            var clips = defaultChatSoundEffects;
+            if (_actorManager.TryGetChatSoundEffects(out var actorClips))
+                clips = actorClips;
+            if (_current_Data.ChatSoundEffects is { Length: > 0 })
+                clips = _current_Data.ChatSoundEffects;
+            if (clips == null || clips.Length == 0)
+                return;
+            
+            SEAudio.clip = clips[UnityEngine.Random.Range(0, clips.Length)];
+            if (SEAudio.clip != null)
+                SEAudio.Play();
         }
 
         #endregion
@@ -205,29 +184,21 @@ namespace Doublsb.Dialog
         //Private Method
         //================================================
 
-        private void _find_character(string name)
-        {
-            if (name != string.Empty)
-            {
-                Transform Child = Characters.transform.Find(name);
-                if (Child != null)
-                    _current_Character = Child.GetComponent<Character>();
-            }
-        }
-
         private void _initialize()
         {
+            _actorManager = GetComponent<IDialogActorManager>();
+            
+            if (!_commandHandlers.ContainsKey("emote"))
+                _commandHandlers["emote"] = gameObject.GetComponent<EmoteCommandHandler>();
+            if(!_commandHandlers.ContainsKey("sound"))
+                _commandHandlers["sound"] = gameObject.GetComponent<SoundCommandHandler>();  
             _currentDelay = Delay;
             _lastDelay = 0.1f;
             Printer_Text.text = string.Empty;
 
             Printer.SetActive(true);
 
-            Characters.SetActive(_current_Character != null);
-            foreach (Transform item in Characters.transform)
-                item.gameObject.SetActive(false);
-            if (_current_Character != null)
-                _current_Character.gameObject.SetActive(true);
+            _actorManager.Show(_current_Data.Character);
         }
 
         private void _init_selector()
@@ -291,26 +262,17 @@ namespace Doublsb.Dialog
 
             foreach (var item in _current_Data.Commands)
             {
+                if (_commandHandlers.TryGetValue(item.Command.ToString(), out var handler))
+                {
+                    yield return handler.PerformAction(item.Context, _current_Data);
+                    Debug.Log($"Command {item.Command} Activated!!");
+                    continue;
+                }
+
                 switch (item.Command)
                 {
                     case Command.print:
                         yield return _printingRoutine = StartCoroutine(_print(item.Context));
-                        break;
-
-                    case Command.color:
-                        _current_Data.Format.Color = item.Context;
-                        break;
-
-                    case Command.emote:
-                        _emote(item.Context);
-                        break;
-
-                    case Command.size:
-                        _current_Data.Format.Resize(item.Context);
-                        break;
-
-                    case Command.sound:
-                        Play_CallSE(item.Context);
                         break;
 
                     case Command.speed:
@@ -357,14 +319,6 @@ namespace Doublsb.Dialog
             }
 
             _current_Data.PrintText += _current_Data.Format.CloseTagger;
-        }
-
-        public void _emote(string Text)
-        {
-            if(_current_Character != null && _current_Character.Emotions.TryGetValue(Text, out var sprite))
-                _current_Character.GetComponent<Image>().sprite = sprite;
-            else
-                Debug.LogError($"Emotion not found: {Text} for {_current_Character}");
         }
 
         private IEnumerator _skip()
