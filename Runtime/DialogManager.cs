@@ -161,7 +161,11 @@ namespace Doublsb.Dialog
                     break;
 
                 default:
-                    _currentDelay = float.Parse(speed);
+                    if (float.TryParse(speed, System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture, out var parsedSpeed))
+                        _currentDelay = parsedSpeed;
+                    else
+                        throw new System.Exception($"Cannot parse float number: {speed}");
                     break;
             }
 
@@ -273,7 +277,11 @@ namespace Doublsb.Dialog
                         yield break;
 
                     case CommandId.wait:
-                        yield return new WaitForSeconds(float.Parse(item.Argument));
+                        if (float.TryParse(item.Argument, System.Globalization.NumberStyles.Any,
+                                System.Globalization.CultureInfo.InvariantCulture, out var waitTime))
+                            yield return new WaitForSeconds(waitTime);
+                        else
+                            throw new System.Exception($"Cannot parse float number: {item.Argument}");
                         break;
                 }
             }
