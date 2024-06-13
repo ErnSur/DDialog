@@ -1,10 +1,11 @@
 namespace Doublsb.Dialog
 {
+    // TODO: remove this enum
     public enum CommandId
     {
         print,
         color,
-        emote,
+        e,//emote
         size,
         sound,
         speed,

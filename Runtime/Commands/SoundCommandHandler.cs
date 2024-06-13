@@ -7,23 +7,25 @@ namespace Doublsb.Dialog
     {
         public string Identifier => "sound";
 
-        //[SerializeField]
-        private DefaultActorManager _actorManager;
+        [SerializeField]
+        private UnityDictionary<string, AudioClip> sounds;
 
         [SerializeField]
         private AudioSource audioSource;
-
+        
         private void Awake()
         {
-            _actorManager = GetComponent<DefaultActorManager>();
             if (audioSource == null)
                 audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         public IEnumerator PerformAction(string soundId, DialogData dialogData)
         {
-            if (_actorManager == null || !_actorManager.TryGetActorSound(soundId, out var clip))
+            if (!sounds.TryGetValue(soundId, out var clip))
+            {
+                Debug.LogError($"Sound not found: {soundId}");
                 yield break;
+            }
 
             audioSource.clip = clip;
             audioSource.Play();

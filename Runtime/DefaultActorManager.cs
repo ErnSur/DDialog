@@ -1,29 +1,39 @@
 namespace Doublsb.Dialog
 {
-    using System;
-    using Sirenix.OdinInspector;
     using UnityEngine;
     using UnityEngine.UI;
 
-    public class DefaultActorManager : MonoBehaviour, IDialogActorManager
+    [RequireComponent(typeof(DialogManager))]
+    public class DefaultActorManager : MonoBehaviour, ISoundEffectProvider
     {
         [SerializeField]
         private GameObject characters;
 
-        private Character _speakingActor;
+        [SerializeField]
+        private string defaultEmotionId = "Normal";
 
-        string IDialogActorManager.SpeakingActor => _speakingActor == null ? string.Empty : _speakingActor.name;
+        private DialogManager _dialogManager;
 
-        public bool TryGetActorSound(string soundId, out AudioClip clip)
+        private void Awake()
         {
-            return _speakingActor.Sounds.TryGetValue(soundId, out clip);
+            _dialogManager = GetComponent<DialogManager>();
+            _dialogManager.actorLineStarted.AddListener(Show);
+            _dialogManager.actorLineFinished.AddListener(OnActorLineFinished);
+        }
+        
+        private void OnDestroy()
+        {
+            _dialogManager.actorLineStarted.RemoveListener(Show);
+            _dialogManager.actorLineFinished.RemoveListener(OnActorLineFinished);
         }
 
-        public bool TryGetChatSoundEffects(out AudioClip[] clips)
+        private void OnActorLineFinished(string _) => HideAll();
+
+        public bool TryGetChatSoundEffects(string actorId, out AudioClip[] clips)
         {
-            if (_speakingActor != null && _speakingActor.ChatSE is { Length: > 0 })
+            if (TryGetActor(actorId, out var actor) && actor.ChatSE is { Length: > 0 })
             {
-                clips = _speakingActor.ChatSE;
+                clips = actor.ChatSE;
                 return true;
             }
 
@@ -31,8 +41,7 @@ namespace Doublsb.Dialog
             return false;
         }
 
-        [Button]
-        public void Show(string actorId)
+        private void Show(string actorId)
         {
             if (string.IsNullOrEmpty(actorId))
             {
@@ -40,7 +49,7 @@ namespace Doublsb.Dialog
                 return;
             }
 
-            if(!TryGetActor(actorId, out _speakingActor))
+            if (!TryGetActor(actorId, out var actor))
             {
                 Debug.LogError($"Actor not found: {actorId}");
                 return;
@@ -49,42 +58,47 @@ namespace Doublsb.Dialog
             characters.SetActive(true);
             foreach (Transform item in characters.transform)
                 item.gameObject.SetActive(false);
-            if (_speakingActor != null)
-                _speakingActor.gameObject.SetActive(true);
-            Emote("Normal");
+            if (actor != null)
+                actor.gameObject.SetActive(true);
+            Emote(actorId, defaultEmotionId);
         }
 
         private bool TryGetActor(string actorId, out Character actor)
         {
             var go = characters.transform.Find(actorId);
-            if(go == null)
+            if (go == null)
             {
                 actor = null;
                 return false;
             }
-            
+
             actor = go.GetComponent<Character>();
             return actor != null;
         }
 
-        public void HideAll()
+        private void HideAll()
         {
-            _speakingActor = null;
             characters.SetActive(false);
         }
 
-        public void Emote(string emotion)
+        public void Emote(string actorId, string emotion)
         {
-            if (_speakingActor == null)
+            if (!TryGetActor(actorId, out var actor))
             {
-                Debug.LogError($"No actor to emote {emotion}. Show actor first.");
+                Debug.LogError($"Actor not found: {actorId}");
                 return;
             }
 
-            if (_speakingActor.Emotions.TryGetValue(emotion, out var sprite))
-                _speakingActor.GetComponent<Image>().sprite = sprite;
+            if (!actor.isActiveAndEnabled)
+            {
+                Debug.LogError($"Actor {actorId} is not shown. Show the actor before emoting {emotion}.");
+                return;
+            }
+
+            if (actor.Emotions.TryGetValue(emotion, out var sprite))
+                actor.GetComponent<Image>().sprite = sprite;
             else
-                Debug.LogError($"Emotion not found: {emotion} for {_speakingActor}");
+                Debug.LogError($"Emotion not found: {emotion} for {actorId}");
         }
     }
 }

@@ -6,9 +6,17 @@ using UnityEngine.UI;
 namespace Doublsb.Dialog
 {
     using System.Linq;
+    using UnityEngine.Events;
+
+    public interface ISoundEffectProvider
+    {
+        bool TryGetChatSoundEffects(string actorId, out AudioClip[] clips);
+    }
 
     public class DialogManager : MonoBehaviour
     {
+        public UnityEvent<string> actorLineStarted;
+        public UnityEvent<string> actorLineFinished;
         [Header("Game Objects")]
         public GameObject Printer;
 
@@ -33,7 +41,7 @@ namespace Doublsb.Dialog
         [HideInInspector]
         public string Result;
 
-        private IDialogActorManager _actorManager;
+        private ISoundEffectProvider _soundEffectProvider;
         private DialogData _currentData;
         private float _currentDelay;
         private float _lastDelay;
@@ -52,7 +60,7 @@ namespace Doublsb.Dialog
         {
             if (_initialized)
                 return;
-            _actorManager = GetComponent<IDialogActorManager>();
+            _soundEffectProvider = GetComponent<ISoundEffectProvider>();
             _commandHandlers = GetComponents<IDialogCommandHandler>().ToDictionary(handler => handler.Identifier);
             _initialized = true;
         }
@@ -97,7 +105,7 @@ namespace Doublsb.Dialog
                 StopCoroutine(_printingRoutine);
 
             Printer.SetActive(false);
-            _actorManager.HideAll();
+            actorLineFinished.Invoke(_currentData.ActorId);
             Selector.SetActive(false);
 
             state = State.Deactivate;
@@ -126,7 +134,7 @@ namespace Doublsb.Dialog
         public void Play_ChatSE()
         {
             var clips = defaultChatSoundEffects;
-            if (_actorManager.TryGetChatSoundEffects(out var actorClips))
+            if (_soundEffectProvider != null && _soundEffectProvider.TryGetChatSoundEffects(_currentData.ActorId, out var actorClips))
                 clips = actorClips;
             if (_currentData.ChatSoundEffects is { Length: > 0 })
                 clips = _currentData.ChatSoundEffects;
@@ -187,7 +195,7 @@ namespace Doublsb.Dialog
 
             Printer.SetActive(true);
 
-            _actorManager.Show(_currentData.ActorId);
+            actorLineStarted.Invoke(_currentData.ActorId);
         }
 
         private void _init_selector()
