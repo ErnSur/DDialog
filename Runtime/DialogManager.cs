@@ -70,14 +70,15 @@ namespace Doublsb.Dialog
 
         #region Show & Hide
 
-        public void Show(DialogData data)
+        public void Show(DialogData Data)
         {
-            Show(new List<DialogData> { data });
+            _currentData = Data;
+            _textingRoutine = StartCoroutine(Activate());
         }
 
-        public void Show(List<DialogData> data)
+        public void Show(List<DialogData> Data)
         {
-            StartCoroutine(Activate_List(data));
+            StartCoroutine(Activate_List(Data));
         }
 
         public void Click_Window()
