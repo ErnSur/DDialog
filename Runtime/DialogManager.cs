@@ -8,11 +8,6 @@ namespace Doublsb.Dialog
     using System.Linq;
     using UnityEngine.Events;
 
-    public interface ISoundEffectProvider
-    {
-        bool TryGetChatSoundEffects(string actorId, out AudioClip[] clips);
-    }
-
     public class DialogManager : MonoBehaviour
     {
         public UnityEvent<string> actorLineStarted;
