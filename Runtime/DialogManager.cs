@@ -19,8 +19,9 @@ namespace Doublsb.Dialog
         public Text Printer_Text;
 
         [Header("Audio Objects")]
-        public AudioSource SEAudio;
+        //public AudioSource SEAudio;
 
+        private SoundManager SEAudio;
         [Header("Preference")]
         public float Delay = 0.1f;
 
@@ -55,6 +56,7 @@ namespace Doublsb.Dialog
         {
             if (_initialized)
                 return;
+            SEAudio = gameObject.GetComponent<SoundManager>();
             _soundEffectProvider = GetComponent<ISoundEffectProvider>();
             _commandHandlers = GetComponents<IDialogCommandHandler>().ToDictionary(handler => handler.Identifier);
             _initialized = true;
@@ -125,7 +127,9 @@ namespace Doublsb.Dialog
         #endregion
 
         #region Sound
-
+        
+        // Idea: play a different sound on samogłoska i spółgłoska
+        // albo inny dźwięk na każdą literę
         public void Play_ChatSE()
         {
             var clips = defaultChatSoundEffects;
@@ -136,9 +140,12 @@ namespace Doublsb.Dialog
             if (clips == null || clips.Length == 0)
                 return;
 
-            SEAudio.clip = clips[UnityEngine.Random.Range(0, clips.Length)];
-            if (SEAudio.clip != null)
-                SEAudio.Play();
+            var clip = clips[Random.Range(0, clips.Length)];
+            if (clip != null)
+                SEAudio.PlaySound(clip);
+            // SEAudio.clip = clips[Random.Range(0, clips.Length)];
+            // if (SEAudio.clip != null)
+            //     SEAudio.Play();
         }
 
         #endregion

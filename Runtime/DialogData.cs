@@ -2,6 +2,7 @@ namespace Doublsb.Dialog
 {
     using System;
     using System.Collections.Generic;
+    using System.Xml.Linq;
     using UnityEngine;
     using UnityEngine.Events;
 
@@ -34,49 +35,57 @@ namespace Doublsb.Dialog
 
         private void Initialize(string textWithCommands)
         {
-            var printText = string.Empty;
-
-            for (int i = 0; i < textWithCommands.Length; i++)
+            try
             {
-                if (textWithCommands[i] != '/')
-                    printText += textWithCommands[i];
-                else // If find '/'
-                {
-                    // Convert last printText to command
-                    if (printText != string.Empty)
-                    {
-                        Commands.Add(new DialogCommand(CommandId.print, printText));
-                        printText = string.Empty;
-                    }
-
-                    // Extract the command content, (i.e., "/commandName:argument/")
-                    var nextSlashIndex = textWithCommands.IndexOf('/', i + 1);
-                    var commandContent = textWithCommands.Substring(i + 1, nextSlashIndex - i - 1);
-
-                    // Add new command
-                    if(TryParseCommand(commandContent,out var command))
-                        Commands.Add(command);
-
-                    // Move loop index
-                    i = nextSlashIndex;
-                }
+                var xDoc = XDocument.Parse($"<root>{textWithCommands}</root>");
+            ParseCommands(xDoc.Root);
             }
-
-            if (printText != string.Empty)
-                Commands.Add(new DialogCommand(CommandId.print, printText));
+            catch (Exception e)
+            {
+                Debug.LogError($"Error parsing dialog: {textWithCommands}\n{e}");
+            }
         }
 
-        private static bool TryParseCommand(string text, out DialogCommand command)
+        private void ParseCommands(XElement root)
         {
-            var segments = text.Split(':');
-
-            if (Enum.TryParse(segments[0], out CommandId commandId))
+            // Tag start callback
+            Console.Write($"/{root.Name}/");
+            if (root.Name != "root" && TryParseCommand(root, out var command))
             {
-                command = segments.Length >= 2 ? new DialogCommand(commandId, segments[1]) : new DialogCommand(commandId);
+                Commands.Add(command);
+                return;
+            }
+            foreach (var node in root.Nodes())
+            {
+                switch (node)
+                {
+                    case XText xText:
+                        // Print command
+                        //Console.Write(xText.Value);
+                        Commands.Add(new DialogCommand(CommandId.print, xText.Value));
+                        break;
+                    case XElement xElement:
+                        ParseCommands(xElement);
+                        break;
+                }
+            }
+            // Tag ends callback
+        }
+
+        private static bool TryParseCommand(XElement commandElement, out DialogCommand command)
+        {
+            var commandName = commandElement.Name.LocalName;
+
+            if (Enum.TryParse(commandName, out CommandId commandId))
+            {
+                var firstAttribute = commandElement.FirstAttribute;
+                command = firstAttribute != null ? 
+                    new DialogCommand(commandId, firstAttribute.Value) :
+                    new DialogCommand(commandId);
                 return true;
             }
 
-            Debug.LogError($"Cannot parse command content: {text}");
+            Debug.LogError($"Cannot parse command content: {commandName}");
             command = null;
             return false;
         }
