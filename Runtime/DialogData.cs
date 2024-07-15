@@ -2,6 +2,7 @@ namespace Doublsb.Dialog
 {
     using System;
     using System.Collections.Generic;
+    using System.Text.RegularExpressions;
     using System.Xml.Linq;
     using UnityEngine;
     using UnityEngine.Events;
@@ -37,8 +38,9 @@ namespace Doublsb.Dialog
         {
             try
             {
+                textWithCommands = ReplaceShorthandXmlTags(textWithCommands);
                 var xDoc = XDocument.Parse($"<root>{textWithCommands}</root>");
-            ParseCommands(xDoc.Root);
+                ParseCommands(xDoc.Root);
             }
             catch (Exception e)
             {
@@ -46,22 +48,58 @@ namespace Doublsb.Dialog
             }
         }
 
+        /// <summary>
+        /// Replace shorthand XML tags with full XML tags.
+        /// <example>
+        /// Turn: &lt;color=red&gt;text&lt;/color&gt;
+        /// Into &lt;color color=&quot;red&quot;&gt;text&lt;/color&gt;
+        /// </example>
+        /// </summary>
+        private static string ReplaceShorthandXmlTags(string textWithCommands)
+        {
+            // Elements with shorthand syntax
+            // Example: <color=red>text</color>
+            // Group 1: tag name
+            // Group 2: =
+            // Group 3: value (without quotes) (only if quotes are missing)
+            var xmlShorthandElementsRegex =
+                @"<(?:(\w+):)?(?<tagName>\w+(?:\.\w+)?)(?:=(?<value>[^""'\s/>]+)|=[""'](?:[^""']*?)[""'])";
+            var matches = Regex.Matches(textWithCommands, xmlShorthandElementsRegex);
+            foreach (Match match in matches)
+            {
+                var tagNameGroup = match.Groups["tagName"];
+                var valueGroup = match.Groups["value"];
+
+                // put a space with a tag name before the "=" and add quotes around value if value mach is present
+                // do it from the end to the start to not mess up the indexes
+                if (valueGroup.Success)
+                {
+                    textWithCommands = textWithCommands.Insert(valueGroup.Index + valueGroup.Length, "\"");
+                    textWithCommands = textWithCommands.Insert(valueGroup.Index, "\"");
+                }
+
+                var tagNameEndIndex = tagNameGroup.Index + tagNameGroup.Length;
+                textWithCommands = textWithCommands.Insert(tagNameEndIndex, $" {tagNameGroup.Value}");
+            }
+
+            return textWithCommands;
+        }
+
+        // TODO: the position of the note tag content can be determined by saving the start and end position of the Text component when printing the text.
         private void ParseCommands(XElement root)
         {
             // Tag start callback
-            Console.Write($"/{root.Name}/");
             if (root.Name != "root" && TryParseCommand(root, out var command))
             {
                 Commands.Add(command);
                 return;
             }
+
             foreach (var node in root.Nodes())
             {
                 switch (node)
                 {
                     case XText xText:
-                        // Print command
-                        //Console.Write(xText.Value);
                         Commands.Add(new DialogCommand(CommandId.print, xText.Value));
                         break;
                     case XElement xElement:
@@ -79,9 +117,9 @@ namespace Doublsb.Dialog
             if (Enum.TryParse(commandName, out CommandId commandId))
             {
                 var firstAttribute = commandElement.FirstAttribute;
-                command = firstAttribute != null ? 
-                    new DialogCommand(commandId, firstAttribute.Value) :
-                    new DialogCommand(commandId);
+                command = firstAttribute != null
+                    ? new DialogCommand(commandId, firstAttribute.Value)
+                    : new DialogCommand(commandId);
                 return true;
             }
 
