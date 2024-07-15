@@ -6,6 +6,7 @@ namespace Doublsb.Dialog
         print,
         color,
         e,//emote
+        note,
         size,
         sound,
         speed,

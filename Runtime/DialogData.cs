@@ -126,10 +126,7 @@ namespace Doublsb.Dialog
 
             if (Enum.TryParse(commandName, out CommandId commandId))
             {
-                var firstAttribute = commandElement.FirstAttribute;
-                command = firstAttribute != null
-                    ? new DialogCommand(commandId, firstAttribute.Value)
-                    : new DialogCommand(commandId);
+                command = new DialogCommand(commandId, commandElement.FirstAttribute?.Value);
                 return true;
             }
 

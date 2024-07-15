@@ -103,23 +103,18 @@ namespace Doublsb.Dialog
         //================================================
         //Private Method
         //================================================
-        private bool isValid
-        {
-            get => _color != string.Empty && _size != string.Empty;
-        }
+        private bool isValid => _color != string.Empty && _size != string.Empty;
 
         private bool isColorValid(string Color)
         {
-            TextColor textColor;
-            Regex hexColor = new Regex("^#(?:[0-9a-fA-F]{3}){1,2}$");
+            var hexColor = new Regex("^#(?:[0-9a-fA-F]{3}){1,2}$");
 
-            return Enum.TryParse(Color, out textColor) || hexColor.Match(Color).Success;
+            return Enum.TryParse(Color, out TextColor _) || hexColor.Match(Color).Success;
         }
 
         private bool isSizeValid(string Size)
         {
-            float size;
-            return float.TryParse(Size, out size);
+            return float.TryParse(Size, out _);
         }
 
     }
