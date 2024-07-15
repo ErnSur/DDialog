@@ -2,6 +2,7 @@ namespace Doublsb.Dialog
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
     using UnityEngine;
@@ -65,7 +66,8 @@ namespace Doublsb.Dialog
             var xmlShorthandElementsRegex =
                 @"<(?:(\w+):)?(?<tagName>\w+(?:\.\w+)?)(?:=(?<value>[^""'\s/>]+)|=[""'](?:[^""']*?)[""'])";
             var matches = Regex.Matches(textWithCommands, xmlShorthandElementsRegex);
-            foreach (Match match in matches)
+            // Reverse the matches so that we can insert the spaces and quotes without messing up the indexes
+            foreach (Match match in matches.Reverse())
             {
                 var tagNameGroup = match.Groups["tagName"];
                 var valueGroup = match.Groups["value"];
@@ -89,12 +91,10 @@ namespace Doublsb.Dialog
         private void ParseCommands(XElement root)
         {
             // Tag start callback
-            if (root.Name != "root" && TryParseCommand(root, out var command))
+            if (TryParseCommand(root, out var command))
             {
                 Commands.Add(command);
-                return;
             }
-
             foreach (var node in root.Nodes())
             {
                 switch (node)
@@ -107,11 +107,21 @@ namespace Doublsb.Dialog
                         break;
                 }
             }
+            
             // Tag ends callback
+            if (!root.IsEmpty && command != null)
+            {
+                Commands.Add(new DialogCommand(command.CommandId, "end"));
+            }
         }
 
         private static bool TryParseCommand(XElement commandElement, out DialogCommand command)
         {
+            if (commandElement.Name.LocalName == "root")
+            {
+                command = null;
+                return false;
+            }
             var commandName = commandElement.Name.LocalName;
 
             if (Enum.TryParse(commandName, out CommandId commandId))

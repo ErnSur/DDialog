@@ -166,7 +166,7 @@ namespace Doublsb.Dialog
                     _currentDelay += 0.25f;
                     break;
 
-                case "init":
+                case "init" or "end":
                     _currentDelay = Delay;
                     break;
 
