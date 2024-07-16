@@ -14,18 +14,14 @@ namespace Doublsb.Dialog
         public UnityEvent<string> actorLineStarted;
         public UnityEvent<string> actorLineFinished;
 
-        [Header("Audio Objects")]
         private SoundManager SEAudio;
 
-        [Header("Preference")]
-        public float Delay = 0.1f;
+        public float delay = 0.02f;
 
         public State State { get; private set; }
 
         private ISoundEffectProvider _soundEffectProvider;
         private DialogData _currentData;
-        private float _currentDelay;
-        private float _lastDelay;
         private Coroutine _textingRoutine;
         private Coroutine _printingRoutine;
 
@@ -58,10 +54,14 @@ namespace Doublsb.Dialog
             };
             _initialized = true;
         }
-
-        //================================================
-        //Public Method
-        //================================================
+        
+        private void Initialize()
+        {
+            OneTimeInit();
+            _dialogView.Text = string.Empty;
+            _dialogView.SetActive(true);
+            actorLineStarted.Invoke(_currentData.ActorId);
+        }
 
         #region Show & Hide
 
@@ -83,7 +83,7 @@ namespace Doublsb.Dialog
             switch (State)
             {
                 case State.Active:
-                    StartCoroutine(_skip());
+                    StartCoroutine(Skip());
                     break;
 
                 case State.Wait:
@@ -112,7 +112,6 @@ namespace Doublsb.Dialog
 
             _dialogView.SetActive(false);
             actorLineFinished.Invoke(_currentData.ActorId);
-//            yield return _dialogMenu.Close();
             StartCoroutine(_dialogMenu.Close());
 
             State = State.Deactivate;
@@ -157,56 +156,6 @@ namespace Doublsb.Dialog
 
         #endregion
 
-        #region Speed
-
-        public void Set_Speed(string speed)
-        {
-            switch (speed)
-            {
-                case "up":
-                    _currentDelay -= 0.25f;
-                    if (_currentDelay <= 0)
-                        _currentDelay = 0.001f;
-                    break;
-
-                case "down":
-                    _currentDelay += 0.25f;
-                    break;
-
-                case "init" or "end":
-                    _currentDelay = Delay;
-                    break;
-
-                default:
-                    if (float.TryParse(speed, System.Globalization.NumberStyles.Any,
-                            System.Globalization.CultureInfo.InvariantCulture, out var parsedSpeed))
-                        _currentDelay = parsedSpeed;
-                    else
-                        throw new System.Exception($"Cannot parse float number: {speed}");
-                    break;
-            }
-
-            _lastDelay = _currentDelay;
-        }
-
-        #endregion
-
-        //================================================
-        //Private Method
-        //================================================
-
-        private void _initialize()
-        {
-            OneTimeInit();
-            _currentDelay = Delay;
-            _lastDelay = 0.1f;
-            _dialogView.Text = string.Empty;
-
-            _dialogView.SetActive(true);
-
-            actorLineStarted.Invoke(_currentData.ActorId);
-        }
-
         #region Show Text
 
         private IEnumerator Activate_List(List<DialogData> dataList)
@@ -231,7 +180,7 @@ namespace Doublsb.Dialog
 
         private IEnumerator Activate()
         {
-            _initialize();
+            Initialize();
 
             State = State.Active;
 
@@ -246,15 +195,11 @@ namespace Doublsb.Dialog
                 switch (item.CommandId)
                 {
                     case CommandId.print:
-                        yield return _printingRoutine = StartCoroutine(_print(item.Argument));
-                        break;
-
-                    case CommandId.speed:
-                        Set_Speed(item.Argument);
+                        yield return _printingRoutine = StartCoroutine(Print(item.Argument));
                         break;
 
                     case CommandId.click:
-                        yield return _waitInput();
+                        yield return WaitForMouseClick();
                         break;
 
                     case CommandId.close:
@@ -274,40 +219,39 @@ namespace Doublsb.Dialog
             State = State.Wait;
         }
 
-        private IEnumerator _waitInput()
-        {
-            while (!Input.GetMouseButtonDown(0))
-                yield return null;
-            _currentDelay = _lastDelay;
-        }
-
-        private IEnumerator _print(string Text)
+        private IEnumerator Print(string text)
         {
             _currentData.PrintText += _currentData.Format.OpenTagger;
 
-            for (int i = 0; i < Text.Length; i++)
+            for (int i = 0; i < text.Length; i++)
             {
-                _currentData.PrintText += Text[i];
+                _currentData.PrintText += text[i];
                 _dialogView.Text = _currentData.PrintText + _currentData.Format.CloseTagger;
 
-                if (Text[i] != ' ')
+                if (text[i] != ' ')
                     Play_ChatSE();
-                if (_currentDelay != 0)
-                    yield return new WaitForSeconds(_currentDelay);
+                if (delay != 0)
+                    yield return new WaitForSeconds(delay);
             }
 
             _currentData.PrintText += _currentData.Format.CloseTagger;
         }
 
-        private IEnumerator _skip()
+        private IEnumerator Skip()
         {
-            if (_currentData.CanBeSkipped)
-            {
-                _currentDelay = 0;
-                while (State != State.Wait)
-                    yield return null;
-                _currentDelay = Delay;
-            }
+            if (!_currentData.CanBeSkipped)
+                yield break;
+            var previousDelay = delay;
+            delay = 0;
+            while (State != State.Wait)
+                yield return null;
+            delay = previousDelay;
+        }
+
+        private static IEnumerator WaitForMouseClick()
+        {
+            while (!Input.GetMouseButtonDown(0))
+                yield return null;
         }
 
         #endregion
