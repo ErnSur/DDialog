@@ -4,29 +4,21 @@ using UnityEngine;
 
 namespace Doublsb.Dialog
 {
+    using System;
     using System.Linq;
     using JetBrains.Annotations;
     using UnityEngine.Events;
-    using Random = Random;
-
+    
     public class DialogManager : MonoBehaviour
     {
+        public event Action<char> CharacterPrinted;
         public UnityEvent<string> actorLineStarted;
         public UnityEvent<string> actorLineFinished;
-
-        private SoundManager SEAudio;
-
-        public float delay = 0.02f;
-
-        public State State { get; private set; }
-
-        private ISoundEffectProvider _soundEffectProvider;
+        
         private DialogData _currentData;
         private Coroutine _textingRoutine;
         private Coroutine _printingRoutine;
-
-        public AudioClip[] defaultChatSoundEffects;
-
+        
         private Dictionary<string, IDialogCommandHandler> _commandHandlers;
 
         private bool _initialized;
@@ -36,14 +28,24 @@ namespace Doublsb.Dialog
 
         private int? _selectedOptionIndex;
 
+        [SerializeField]
+        private float delay = 0.02f;
+
+        public float Delay
+        {
+            get => delay;
+            set => delay = value;
+        }
+
+        private State State { get; set; }
+        public DialogData CurrentDialogData => _currentData;
+
         private void Awake() => OneTimeInit();
 
         private void OneTimeInit()
         {
             if (_initialized)
                 return;
-            SEAudio = gameObject.GetComponent<SoundManager>();
-            _soundEffectProvider = GetComponent<ISoundEffectProvider>();
             _commandHandlers = GetComponents<IDialogCommandHandler>().ToDictionary(handler => handler.Identifier);
             _dialogView = GetComponent<IDialogView>();
             _dialogMenu = GetComponent<IDialogMenuView>();
@@ -54,7 +56,7 @@ namespace Doublsb.Dialog
             };
             _initialized = true;
         }
-        
+
         private void Initialize()
         {
             OneTimeInit();
@@ -95,7 +97,6 @@ namespace Doublsb.Dialog
 
         public void Hide()
         {
-            Debug.Log("Hide");
             if (_textingRoutine != null)
                 StopCoroutine(_textingRoutine);
 
@@ -127,31 +128,6 @@ namespace Doublsb.Dialog
                 var selectedOption = _currentData.SelectList[_selectedOptionIndex.Value];
                 selectedOption.Callback?.Invoke();
             }
-        }
-
-        #endregion
-
-        #region Sound
-
-        // Idea: play a different sound on samogłoska i spółgłoska
-        // albo inny dźwięk na każdą literę
-        public void Play_ChatSE()
-        {
-            var clips = defaultChatSoundEffects;
-            if (_soundEffectProvider != null &&
-                _soundEffectProvider.TryGetChatSoundEffects(_currentData.ActorId, out var actorClips))
-                clips = actorClips;
-            if (_currentData.ChatSoundEffects is { Length: > 0 })
-                clips = _currentData.ChatSoundEffects;
-            if (clips == null || clips.Length == 0)
-                return;
-
-            var clip = clips[Random.Range(0, clips.Length)];
-            if (clip != null)
-                SEAudio.PlaySound(clip);
-            // SEAudio.clip = clips[Random.Range(0, clips.Length)];
-            // if (SEAudio.clip != null)
-            //     SEAudio.Play();
         }
 
         #endregion
@@ -225,13 +201,13 @@ namespace Doublsb.Dialog
 
             for (int i = 0; i < text.Length; i++)
             {
-                _currentData.PrintText += text[i];
+                var character = text[i];
+                _currentData.PrintText += character;
                 _dialogView.Text = _currentData.PrintText + _currentData.Format.CloseTagger;
 
-                if (text[i] != ' ')
-                    Play_ChatSE();
-                if (delay != 0)
-                    yield return new WaitForSeconds(delay);
+                CharacterPrinted?.Invoke(character);
+                if (Delay != 0)
+                    yield return new WaitForSeconds(Delay);
             }
 
             _currentData.PrintText += _currentData.Format.CloseTagger;
@@ -241,11 +217,11 @@ namespace Doublsb.Dialog
         {
             if (!_currentData.CanBeSkipped)
                 yield break;
-            var previousDelay = delay;
-            delay = 0;
+            var previousDelay = Delay;
+            Delay = 0;
             while (State != State.Wait)
                 yield return null;
-            delay = previousDelay;
+            Delay = previousDelay;
         }
 
         private static IEnumerator WaitForMouseClick()

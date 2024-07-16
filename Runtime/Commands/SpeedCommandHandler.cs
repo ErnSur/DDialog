@@ -14,8 +14,8 @@ namespace Doublsb.Dialog
 
         private float CurrentDelay
         {
-            get => _dialogManager.delay;
-            set => _dialogManager.delay = value;
+            get => _dialogManager.Delay;
+            set => _dialogManager.Delay = value;
         }
         
         public string Identifier => "speed";

@@ -3,44 +3,7 @@ namespace Doublsb.Dialog
     using System.Collections.Generic;
     using UnityEngine;
 
-    public interface IAudioPlayer
-    {
-        void PlaySound(AudioClip clip);
-    }
-
-    internal class SoundManager : MonoBehaviour, IAudioPlayer
-    {
-        private ComponentPool<AudioSource> _audioSourcesPool;
-
-        private AudioSource _activeAudioSource;
-        public float minPlaybackTime = 0.2f;
-        private void Awake()
-        {
-            _audioSourcesPool = new ComponentPool<AudioSource>(gameObject, 5);
-        }
-
-        public void PlaySound(AudioClip clip)
-        {
-            if (_activeAudioSource != null)
-            {
-                if (_activeAudioSource.isPlaying && _activeAudioSource.time < minPlaybackTime)
-                    return;
-                _activeAudioSource.Stop();
-                var newAudioSource = _audioSourcesPool.Rent();
-                _audioSourcesPool.Return(_activeAudioSource);
-                _activeAudioSource = newAudioSource;
-            }
-            else
-            {
-                _activeAudioSource = _audioSourcesPool.Rent();
-            }
-            
-            _activeAudioSource.clip = clip;
-            _activeAudioSource.Play();
-        }
-    }
-
-    internal class ComponentPool<T> where T : Component
+    internal sealed class ComponentPool<T> where T : Component
     {
         private readonly GameObject _gameObject;
 
@@ -66,7 +29,7 @@ namespace Doublsb.Dialog
                 _available.Push(CreateObject());
         }
 
-        public virtual T Rent()
+        public T Rent()
         {
             var obj = _available.Count > 0 ? _available.Pop() : CreateObject();
             _rented.Add(obj);
