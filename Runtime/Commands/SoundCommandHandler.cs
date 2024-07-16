@@ -1,6 +1,7 @@
 namespace Doublsb.Dialog
 {
     using System.Collections;
+    using System.Threading;
     using UnityEngine;
 
     internal class SoundCommandHandler : MonoBehaviour, IDialogCommandHandler
@@ -19,7 +20,7 @@ namespace Doublsb.Dialog
                 audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        public IEnumerator PerformAction(string soundId, DialogData dialogData)
+        public IEnumerator PerformAction(string soundId, DialogData dialogData, CancellationToken fastForwardToken)
         {
             if (!sounds.TryGetValue(soundId, out var clip))
             {

@@ -4,41 +4,30 @@ using UnityEngine;
 
 namespace Doublsb.Dialog
 {
-    using System;
     using System.Linq;
+    using System.Threading;
     using JetBrains.Annotations;
     using UnityEngine.Events;
     
     public class DialogPrinter : MonoBehaviour
     {
-        public event Action<char> CharacterPrinted;
         public UnityEvent<string> actorLineStarted;
         public UnityEvent<string> actorLineFinished;
-        
-        private DialogData _currentData;
-        private Coroutine _textingRoutine;
-        private Coroutine _printingRoutine;
-        
-        private Dictionary<string, IDialogCommandHandler> _commandHandlers;
+        public DialogCommandSet CurrentDialogCommandSet { get; private set; }
 
         private bool _initialized;
 
-        private IDialogMenuView _dialogMenu;
-        private IDialogView _dialogView;
+        private Dictionary<string, IDialogCommandHandler> _commandHandlers;
+        
+        private Coroutine _commandChainRoutine;
 
         private int? _selectedOptionIndex;
+        
+        private IDialogView _dialogView;
+        private IDialogMenuView _dialogMenu;
+        private State _state;
 
-        [SerializeField]
-        private float delay = 0.02f;
-
-        public float Delay
-        {
-            get => delay;
-            set => delay = value;
-        }
-
-        private State State { get; set; }
-        public DialogData CurrentDialogData => _currentData;
+        private CancellationTokenSource _fastForwardTokenSource;
 
         private void Awake()
         {
@@ -65,22 +54,22 @@ namespace Doublsb.Dialog
         /// </summary>
         private void Setup()
         {
+            _fastForwardTokenSource?.Dispose();
+            _fastForwardTokenSource = new CancellationTokenSource();
             OneTimeInitialize();
             _dialogView.Text = string.Empty;
             _dialogView.SetActive(true);
-            actorLineStarted.Invoke(_currentData.ActorId);
+            actorLineStarted.Invoke(CurrentDialogCommandSet.ActorId);
         }
 
-        #region Show & Hide
-
-        public void Show(DialogData data)
+        public void Run(DialogCommandSet commandSet)
         {
             _selectedOptionIndex = null;
-            _currentData = data;
-            _textingRoutine = StartCoroutine(Activate());
+            CurrentDialogCommandSet = commandSet;
+            _commandChainRoutine = StartCoroutine(RunCommandSet());
         }
 
-        public void Show(List<DialogData> data)
+        public void Run(List<DialogCommandSet> data)
         {
             StartCoroutine(Activate_List(data));
         }
@@ -88,14 +77,14 @@ namespace Doublsb.Dialog
         [UsedImplicitly]
         public void SkipOrClose()
         {
-            switch (State)
+            switch (_state)
             {
-                case State.Active:
-                    StartCoroutine(Skip());
+                case State.RunningCommands:
+                    FastForwardCommands();
                     break;
 
-                case State.Wait:
-                    if (_currentData.SelectList.Count <= 0)
+                case State.AwaitingClose:
+                    if (CurrentDialogCommandSet.SelectList.Count <= 0)
                         Close();
                     break;
             }
@@ -103,116 +92,77 @@ namespace Doublsb.Dialog
 
         public void Close()
         {
-            if (_textingRoutine != null)
-                StopCoroutine(_textingRoutine);
+            if (_commandChainRoutine != null)
+                StopCoroutine(_commandChainRoutine);
 
-            if (_printingRoutine != null)
-                StopCoroutine(_printingRoutine);
-
-            foreach (var item in _currentData.Commands)
+            foreach (var item in CurrentDialogCommandSet.Commands)
             {
                 if (_commandHandlers.TryGetValue(item.CommandId.ToString(), out var handler))
                 {
-                    StartCoroutine(handler.CleanupAction(item.Argument, _currentData));
+                    StartCoroutine(handler.CleanupAction(item.Argument, CurrentDialogCommandSet));
                 }
             }
 
             _dialogView.SetActive(false);
-            actorLineFinished.Invoke(_currentData.ActorId);
+            actorLineFinished.Invoke(CurrentDialogCommandSet.ActorId);
             StartCoroutine(_dialogMenu.Close());
 
-            State = State.Deactivate;
+            _state = State.Deactivate;
 
-            if (_currentData.Callback != null)
+            if (CurrentDialogCommandSet.Callback != null)
             {
-                _currentData.Callback.Invoke();
-                _currentData.Callback = null;
+                CurrentDialogCommandSet.Callback.Invoke();
+                CurrentDialogCommandSet.Callback = null;
             }
 
             if (_selectedOptionIndex.HasValue)
             {
-                var selectedOption = _currentData.SelectList[_selectedOptionIndex.Value];
+                var selectedOption = CurrentDialogCommandSet.SelectList[_selectedOptionIndex.Value];
                 selectedOption.Callback?.Invoke();
             }
         }
 
-        #endregion
 
-        #region Printing
-
-        private IEnumerator Activate_List(List<DialogData> dataList)
+        private IEnumerator Activate_List(List<DialogCommandSet> commandSets)
         {
-            State = State.Active;
+            _state = State.RunningCommands;
 
-            foreach (var data in dataList)
+            foreach (var commandSet in commandSets)
             {
-                Show(data);
-                if (data.SelectList.Count > 0)
+                Run(commandSet);
+                if (commandSet.SelectList.Count > 0)
                 {
-                    var textOptions = data.SelectList.Select(x => x.Text).ToArray();
+                    var textOptions = commandSet.SelectList.Select(x => x.Text).ToArray();
                     StartCoroutine(_dialogMenu.Open(textOptions));
                 }
 
-                while (State != State.Deactivate)
+                while (_state != State.Deactivate)
                 {
                     yield return null;
                 }
             }
         }
 
-        private IEnumerator Activate()
+        private IEnumerator RunCommandSet()
         {
             Setup();
-            State = State.Active;
+            _state = State.RunningCommands;
 
-            foreach (var command in _currentData.Commands)
+            foreach (var command in CurrentDialogCommandSet.Commands)
             {
                 if (_commandHandlers.TryGetValue(command.CommandId.ToString(), out var handler))
                 {
-                    yield return handler.PerformAction(command.Argument, _currentData);
-                    continue;
-                }
-
-                switch (command.CommandId)
-                {
-                    case CommandId.print:
-                        yield return _printingRoutine = StartCoroutine(Print(command.Argument));
-                        break;
+                    yield return handler.PerformAction(command.Argument, CurrentDialogCommandSet, _fastForwardTokenSource.Token);
                 }
             }
 
-            State = State.Wait;
+            _state = State.AwaitingClose;
         }
 
-        private IEnumerator Print(string text)
+        private void FastForwardCommands()
         {
-            _currentData.PrintText += _currentData.Format.OpenTagger;
-
-            for (int i = 0; i < text.Length; i++)
-            {
-                var character = text[i];
-                _currentData.PrintText += character;
-                _dialogView.Text = _currentData.PrintText + _currentData.Format.CloseTagger;
-
-                CharacterPrinted?.Invoke(character);
-                if (Delay != 0)
-                    yield return new WaitForSeconds(Delay);
-            }
-
-            _currentData.PrintText += _currentData.Format.CloseTagger;
+            if (CurrentDialogCommandSet.CanBeSkipped)
+                _fastForwardTokenSource.Cancel();
         }
-
-        private IEnumerator Skip()
-        {
-            if (!_currentData.CanBeSkipped)
-                yield break;
-            var previousDelay = Delay;
-            Delay = 0;
-            while (State != State.Wait)
-                yield return null;
-            Delay = previousDelay;
-        }
-
-        #endregion
     }
 }

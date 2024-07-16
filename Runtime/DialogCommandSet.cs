@@ -7,11 +7,8 @@ namespace Doublsb.Dialog
     using System.Xml.Linq;
     using UnityEngine;
     using UnityEngine.Events;
-
-    /// <summary>
-    /// Convert string to Data. Contains List of DialogCommand and DialogFormat.
-    /// </summary>
-    public class DialogData
+    
+    public class DialogCommandSet
     {
         public readonly string ActorId;
         public readonly List<DialogCommand> Commands = new List<DialogCommand>();
@@ -24,7 +21,7 @@ namespace Doublsb.Dialog
         public readonly bool CanBeSkipped;
         public UnityAction Callback;
 
-        public DialogData(string originalString, string actorId = "", UnityAction callback = null,
+        public DialogCommandSet(string originalString, string actorId = "", UnityAction callback = null,
             bool canBeSkipped = true, AudioClip[] chatSoundEffects = null)
         {
             Initialize(originalString);

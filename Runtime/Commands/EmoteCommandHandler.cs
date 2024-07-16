@@ -1,6 +1,8 @@
 namespace Doublsb.Dialog
 {
-    using System.Collections;using UnityEngine;
+    using System.Collections;
+    using System.Threading;
+    using UnityEngine;
 
     internal class EmoteCommandHandler : MonoBehaviour, IDialogCommandHandler
     {
@@ -17,9 +19,9 @@ namespace Doublsb.Dialog
         // [CommandHandler("emote")]
         // But then how do you handle dynamic command identifiers? do such command should exist even?
         // for something like emoji recognition they should though
-        public IEnumerator PerformAction(string emoteId, DialogData dialogData)
+        public IEnumerator PerformAction(string emoteId, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken)
         {
-            _actorManager.Emote(dialogData.ActorId, emoteId);
+            _actorManager.Emote(dialogCommandSet.ActorId, emoteId);
             yield break;
         }
     }

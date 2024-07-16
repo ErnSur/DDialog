@@ -3,19 +3,22 @@ namespace Doublsb.Dialog
     using System;
     using System.Collections;
     using System.Globalization;
+    using System.Threading;
     using UnityEngine;
 
+    [RequireComponent(typeof(PrintCommandHandler))]
     [RequireComponent(typeof(DialogPrinter))]
     public class SpeedCommandHandler : MonoBehaviour, IDialogCommandHandler
     {
         public float defaultDelay = 0.02f;
 
         private DialogPrinter _dialogPrinter;
+        private PrintCommandHandler _printCommandHandler;
 
         private float CurrentDelay
         {
-            get => _dialogPrinter.Delay;
-            set => _dialogPrinter.Delay = value;
+            get => _printCommandHandler.Delay;
+            set => _printCommandHandler.Delay = value;
         }
         
         public string Identifier => "speed";
@@ -23,10 +26,11 @@ namespace Doublsb.Dialog
         private void Awake()
         {
             _dialogPrinter = GetComponent<DialogPrinter>();
+            _printCommandHandler = GetComponent<PrintCommandHandler>();
             _dialogPrinter.actorLineStarted.AddListener(OnActorLineStart);
         }
 
-        IEnumerator IDialogCommandHandler.PerformAction(string context, DialogData dialogData)
+        IEnumerator IDialogCommandHandler.PerformAction(string context, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken)
         {
             SetSpeed(context);
             yield break;

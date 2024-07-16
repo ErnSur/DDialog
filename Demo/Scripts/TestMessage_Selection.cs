@@ -9,42 +9,42 @@ public class TestMessage_Selection : MonoBehaviour
 
     private void Awake()
     {
-        var dialogTexts = new List<DialogData>();
+        var dialogTexts = new List<DialogCommandSet>();
 
-        var Text1 = new DialogData("What is 2 times 5?");
+        var Text1 = new DialogCommandSet("What is 2 times 5?");
         Text1.SelectList.Add(new MenuOption("10", OnCorrectOption));
         Text1.SelectList.Add(new MenuOption("8", OnWrongOption));
         Text1.SelectList.Add(new MenuOption("Why should I care?", OnOtherOption));
         
         dialogTexts.Add(Text1);
 
-        dialogPrinter.Show(dialogTexts);
+        dialogPrinter.Run(dialogTexts);
     }
 
     private void OnOtherOption()
     {
-        var dialogTexts = new List<DialogData>();
+        var dialogTexts = new List<DialogCommandSet>();
 
-        dialogTexts.Add(new DialogData("Right. You don't have to get the answer."));
+        dialogTexts.Add(new DialogCommandSet("Right. You don't have to get the answer."));
 
-        dialogPrinter.Show(dialogTexts);
+        dialogPrinter.Run(dialogTexts);
     }
 
     private void OnWrongOption()
     {
-        var dialogTexts = new List<DialogData>();
+        var dialogTexts = new List<DialogCommandSet>();
 
-        dialogTexts.Add(new DialogData("You are wrong."));
+        dialogTexts.Add(new DialogCommandSet("You are wrong."));
 
-        dialogPrinter.Show(dialogTexts);
+        dialogPrinter.Run(dialogTexts);
     }
 
     private void OnCorrectOption()
     {
-        var dialogTexts = new List<DialogData>();
+        var dialogTexts = new List<DialogCommandSet>();
 
-        dialogTexts.Add(new DialogData("You are right."));
+        dialogTexts.Add(new DialogCommandSet("You are right."));
 
-        dialogPrinter.Show(dialogTexts);
+        dialogPrinter.Run(dialogTexts);
     }
 }
