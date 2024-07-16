@@ -262,7 +262,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 4094011683184477041}
         m_TargetAssemblyTypeName: 
-        m_MethodName: Click_Window
+        m_MethodName: SkipOrClose
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

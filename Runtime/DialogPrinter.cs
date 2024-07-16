@@ -40,9 +40,12 @@ namespace Doublsb.Dialog
         private State State { get; set; }
         public DialogData CurrentDialogData => _currentData;
 
-        private void Awake() => OneTimeInit();
+        private void Awake()
+        {
+            OneTimeInitialize();
+        }
 
-        private void OneTimeInit()
+        private void OneTimeInitialize()
         {
             if (_initialized)
                 return;
@@ -52,14 +55,17 @@ namespace Doublsb.Dialog
             _dialogMenu.OptionSelected += index =>
             {
                 _selectedOptionIndex = index;
-                Hide();
+                Close();
             };
             _initialized = true;
         }
 
-        private void Initialize()
+        /// <summary>
+        /// Initialization that runs before every dialog start
+        /// </summary>
+        private void Setup()
         {
-            OneTimeInit();
+            OneTimeInitialize();
             _dialogView.Text = string.Empty;
             _dialogView.SetActive(true);
             actorLineStarted.Invoke(_currentData.ActorId);
@@ -80,7 +86,7 @@ namespace Doublsb.Dialog
         }
 
         [UsedImplicitly]
-        public void Click_Window()
+        public void SkipOrClose()
         {
             switch (State)
             {
@@ -90,12 +96,12 @@ namespace Doublsb.Dialog
 
                 case State.Wait:
                     if (_currentData.SelectList.Count <= 0)
-                        Hide();
+                        Close();
                     break;
             }
         }
 
-        public void Hide()
+        public void Close()
         {
             if (_textingRoutine != null)
                 StopCoroutine(_textingRoutine);
@@ -132,7 +138,7 @@ namespace Doublsb.Dialog
 
         #endregion
 
-        #region Show Text
+        #region Printing
 
         private IEnumerator Activate_List(List<DialogData> dataList)
         {
@@ -156,7 +162,7 @@ namespace Doublsb.Dialog
 
         private IEnumerator Activate()
         {
-            Initialize();
+            Setup();
 
             State = State.Active;
 
@@ -179,7 +185,7 @@ namespace Doublsb.Dialog
                         break;
 
                     case CommandId.close:
-                        Hide();
+                        Close();
                         yield break;
 
                     case CommandId.wait:
