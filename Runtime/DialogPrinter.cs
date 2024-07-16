@@ -163,37 +163,20 @@ namespace Doublsb.Dialog
         private IEnumerator Activate()
         {
             Setup();
-
             State = State.Active;
 
-            foreach (var item in _currentData.Commands)
+            foreach (var command in _currentData.Commands)
             {
-                if (_commandHandlers.TryGetValue(item.CommandId.ToString(), out var handler))
+                if (_commandHandlers.TryGetValue(command.CommandId.ToString(), out var handler))
                 {
-                    yield return handler.PerformAction(item.Argument, _currentData);
+                    yield return handler.PerformAction(command.Argument, _currentData);
                     continue;
                 }
 
-                switch (item.CommandId)
+                switch (command.CommandId)
                 {
                     case CommandId.print:
-                        yield return _printingRoutine = StartCoroutine(Print(item.Argument));
-                        break;
-
-                    case CommandId.click:
-                        yield return WaitForMouseClick();
-                        break;
-
-                    case CommandId.close:
-                        Close();
-                        yield break;
-
-                    case CommandId.wait:
-                        if (float.TryParse(item.Argument, System.Globalization.NumberStyles.Any,
-                                System.Globalization.CultureInfo.InvariantCulture, out var waitTime))
-                            yield return new WaitForSeconds(waitTime);
-                        else
-                            throw new System.Exception($"Cannot parse float number: {item.Argument}");
+                        yield return _printingRoutine = StartCoroutine(Print(command.Argument));
                         break;
                 }
             }
@@ -228,12 +211,6 @@ namespace Doublsb.Dialog
             while (State != State.Wait)
                 yield return null;
             Delay = previousDelay;
-        }
-
-        private static IEnumerator WaitForMouseClick()
-        {
-            while (!Input.GetMouseButtonDown(0))
-                yield return null;
         }
 
         #endregion
