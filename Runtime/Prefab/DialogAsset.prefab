@@ -361,12 +361,14 @@ GameObject:
   m_Component:
   - component: {fileID: 4094011683184477044}
   - component: {fileID: 4094011683184477041}
+  - component: {fileID: 2268022440094221864}
+  - component: {fileID: 7605292477492029491}
+  - component: {fileID: 8708108971047131529}
   - component: {fileID: 4094011683184477045}
   - component: {fileID: 4094011683184477046}
   - component: {fileID: 4094011683184477047}
   - component: {fileID: 4094011683184477043}
   - component: {fileID: 4094011683184477040}
-  - component: {fileID: 7605292477492029491}
   - component: {fileID: 2914881084307440538}
   - component: {fileID: 4212762744698001256}
   - component: {fileID: 6744221929883744358}
@@ -412,16 +414,57 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07f3da1b4b00cd542a74d707c719f823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Printer: {fileID: 4094011681938070649}
-  Printer_Text: {fileID: 4094011683009168357}
-  SEAudio: {fileID: 4094011683184477043}
+  actorLineStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  actorLineFinished:
+    m_PersistentCalls:
+      m_Calls: []
   Delay: 0.02
-  Selector: {fileID: 1347563849434575771}
-  SelectorItem: {fileID: 6424157165152917895}
-  SelectorItemText: {fileID: 6286582588928056812}
-  state: 0
-  Result: 
   defaultChatSoundEffects: []
+--- !u!114 &2268022440094221864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4094011683184476936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a277444941284c3db2ca481f8f3ee727, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textWindow: {fileID: 4094011681938070649}
+  textComponent: {fileID: 4094011683009168357}
+--- !u!114 &7605292477492029491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4094011683184476936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc437d45ee034b648001c6637b9edb78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characters: {fileID: 4094011683457312917}
+  defaultEmotionId: Normal
+--- !u!114 &8708108971047131529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4094011683184476936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 861d5f7bbbe7484e8a3d93d9cf3711d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selector: {fileID: 1347563849434575771}
+  selectorItem: {fileID: 6424157165152917895}
+  selectorItemText: {fileID: 6286582588928056812}
 --- !u!223 &4094011683184477045
 Canvas:
   m_ObjectHideFlags: 0
@@ -679,19 +722,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &7605292477492029491
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4094011683184476936}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc437d45ee034b648001c6637b9edb78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  characters: {fileID: 4094011683457312917}
 --- !u!114 &2914881084307440538
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -728,6 +758,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1b9c38ea96f430fa8768d922f68084d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sounds:
+    list: []
   audioSource: {fileID: 4094011683184477040}
 --- !u!114 &7929902940715529227
 MonoBehaviour:
