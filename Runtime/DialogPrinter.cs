@@ -9,7 +9,7 @@ namespace Doublsb.Dialog
     using JetBrains.Annotations;
     using UnityEngine.Events;
     
-    public class DialogManager : MonoBehaviour
+    public class DialogPrinter : MonoBehaviour
     {
         public event Action<char> CharacterPrinted;
         public UnityEvent<string> actorLineStarted;

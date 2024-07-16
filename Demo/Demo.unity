@@ -162,7 +162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af59b715d564ae9488e8438d6860bc3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DialogManager: {fileID: 325689816}
+  dialogPrinter: {fileID: 325689816}
   Example:
   - {fileID: 1970942286}
   - {fileID: 608540190}

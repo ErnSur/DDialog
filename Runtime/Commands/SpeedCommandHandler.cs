@@ -5,25 +5,25 @@ namespace Doublsb.Dialog
     using System.Globalization;
     using UnityEngine;
 
-    [RequireComponent(typeof(DialogManager))]
+    [RequireComponent(typeof(DialogPrinter))]
     public class SpeedCommandHandler : MonoBehaviour, IDialogCommandHandler
     {
         public float defaultDelay = 0.02f;
 
-        private DialogManager _dialogManager;
+        private DialogPrinter _dialogPrinter;
 
         private float CurrentDelay
         {
-            get => _dialogManager.Delay;
-            set => _dialogManager.Delay = value;
+            get => _dialogPrinter.Delay;
+            set => _dialogPrinter.Delay = value;
         }
         
         public string Identifier => "speed";
 
         private void Awake()
         {
-            _dialogManager = GetComponent<DialogManager>();
-            _dialogManager.actorLineStarted.AddListener(OnActorLineStart);
+            _dialogPrinter = GetComponent<DialogPrinter>();
+            _dialogPrinter.actorLineStarted.AddListener(OnActorLineStart);
         }
 
         IEnumerator IDialogCommandHandler.PerformAction(string context, DialogData dialogData)

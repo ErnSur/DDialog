@@ -5,7 +5,7 @@ using Doublsb.Dialog;
 
 public class TestMessage : MonoBehaviour
 {
-    public DialogManager DialogManager;
+    public DialogPrinter dialogPrinter;
 
     public GameObject[] Example;
 
@@ -31,7 +31,7 @@ public class TestMessage : MonoBehaviour
 
         dialogTexts.Add(new DialogData("That's it! Please check the documents. Good luck to you.", "Sa"));
 
-        DialogManager.Show(dialogTexts);
+        dialogPrinter.Show(dialogTexts);
     }
 
     private void Show_Example(int index)
