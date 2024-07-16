@@ -6,6 +6,7 @@ using UnityEngine.UI;
 namespace Doublsb.Dialog
 {
     using System.Linq;
+    using JetBrains.Annotations;
     using UnityEngine.Events;
 
     public class DialogManager : MonoBehaviour
@@ -19,9 +20,8 @@ namespace Doublsb.Dialog
         public Text Printer_Text;
 
         [Header("Audio Objects")]
-        //public AudioSource SEAudio;
-
         private SoundManager SEAudio;
+        
         [Header("Preference")]
         public float Delay = 0.1f;
 
@@ -32,10 +32,9 @@ namespace Doublsb.Dialog
         public Text SelectorItemText;
 
         [HideInInspector]
-        public State state;
-
-        [HideInInspector]
         public string Result;
+        
+        public State State { get; private set; }
 
         private ISoundEffectProvider _soundEffectProvider;
         private DialogData _currentData;
@@ -67,20 +66,21 @@ namespace Doublsb.Dialog
 
         #region Show & Hide
 
-        public void Show(DialogData Data)
+        public void Show(DialogData data)
         {
-            _currentData = Data;
+            _currentData = data;
             _textingRoutine = StartCoroutine(Activate());
         }
 
-        public void Show(List<DialogData> Data)
+        public void Show(List<DialogData> data)
         {
-            StartCoroutine(Activate_List(Data));
+            StartCoroutine(Activate_List(data));
         }
 
+        [UsedImplicitly]
         public void Click_Window()
         {
-            switch (state)
+            switch (State)
             {
                 case State.Active:
                     StartCoroutine(_skip());
@@ -101,11 +101,19 @@ namespace Doublsb.Dialog
             if (_printingRoutine != null)
                 StopCoroutine(_printingRoutine);
 
+            foreach (var item in _currentData.Commands)
+            {
+                if (_commandHandlers.TryGetValue(item.CommandId.ToString(), out var handler))
+                {
+                    StartCoroutine(handler.CleanupAction(item.Argument, _currentData));
+                }
+            }
+
             Printer.SetActive(false);
             actorLineFinished.Invoke(_currentData.ActorId);
             Selector.SetActive(false);
 
-            state = State.Deactivate;
+            State = State.Deactivate;
 
             if (_currentData.Callback != null)
             {
@@ -230,23 +238,23 @@ namespace Doublsb.Dialog
         {
             SelectorItemText.text = _currentData.SelectList.GetByIndex(index).Value;
 
-            var NewItem = Instantiate(SelectorItem, Selector.transform);
-            NewItem.GetComponent<Button>().onClick.AddListener(() => Select(index));
-            NewItem.SetActive(true);
+            var newItem = Instantiate(SelectorItem, Selector.transform);
+            newItem.GetComponent<Button>().onClick.AddListener(() => Select(index));
+            newItem.SetActive(true);
         }
 
         #region Show Text
 
-        private IEnumerator Activate_List(List<DialogData> DataList)
+        private IEnumerator Activate_List(List<DialogData> dataList)
         {
-            state = State.Active;
+            State = State.Active;
 
-            foreach (var Data in DataList)
+            foreach (var data in dataList)
             {
-                Show(Data);
+                Show(data);
                 _init_selector();
 
-                while (state != State.Deactivate)
+                while (State != State.Deactivate)
                 {
                     yield return null;
                 }
@@ -257,7 +265,7 @@ namespace Doublsb.Dialog
         {
             _initialize();
 
-            state = State.Active;
+            State = State.Active;
 
             foreach (var item in _currentData.Commands)
             {
@@ -296,7 +304,7 @@ namespace Doublsb.Dialog
                 }
             }
 
-            state = State.Wait;
+            State = State.Wait;
         }
 
         private IEnumerator _waitInput()
@@ -329,7 +337,7 @@ namespace Doublsb.Dialog
             if (_currentData.CanBeSkipped)
             {
                 _currentDelay = 0;
-                while (state != State.Wait)
+                while (State != State.Wait)
                     yield return null;
                 _currentDelay = Delay;
             }

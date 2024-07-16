@@ -6,5 +6,10 @@ namespace Doublsb.Dialog
     {
         string Identifier { get; }
         IEnumerator PerformAction(string context, DialogData dialogData);
+
+        IEnumerator CleanupAction(string context, DialogData dialogData)
+        {
+            yield break;
+        }
     }
 }
