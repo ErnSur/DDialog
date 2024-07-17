@@ -9,7 +9,7 @@ namespace Doublsb.Dialog
     using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
     using UnityEngine.Events;
-    
+
     [RequireComponent(typeof(ICommandFactory))]
     public class DialogPrinter : MonoBehaviour
     {
@@ -20,15 +20,15 @@ namespace Doublsb.Dialog
         private bool _initialized;
 
         private int? _selectedOptionIndex;
-        
-        private IDialogView _dialogView;
+
+        private IPrinter _dialogView;
         private IDialogMenuView _dialogMenu;
         private State _state;
 
         private CancellationTokenSource _fastForwardTokenSource;
         private CancellationTokenSource _cancelCommandChainTokenSource;
         private ICommandFactory _commandFactory;
-        private readonly List<ICommand> _currentCommandChain = new List<ICommand>();
+        private List<Command> _currentCommands = new List<Command>();
 
         private void Awake()
         {
@@ -40,7 +40,7 @@ namespace Doublsb.Dialog
             if (_initialized)
                 return;
             _commandFactory = GetComponent<ICommandFactory>();
-            _dialogView = GetComponent<IDialogView>();
+            _dialogView = GetComponent<IPrinter>();
             _dialogMenu = GetComponent<IDialogMenuView>();
             _dialogMenu.OptionSelected += index =>
             {
@@ -57,8 +57,7 @@ namespace Doublsb.Dialog
         {
             _fastForwardTokenSource?.Dispose();
             _fastForwardTokenSource = new CancellationTokenSource();
-            _cancelCommandChainTokenSource?.Dispose();
-            _cancelCommandChainTokenSource = new CancellationTokenSource();
+
             OneTimeInitialize();
             _dialogView.Text = string.Empty;
             _dialogView.SetActive(true);
@@ -69,6 +68,8 @@ namespace Doublsb.Dialog
         {
             _selectedOptionIndex = null;
             CurrentDialogCommandSet = commandSet;
+            _cancelCommandChainTokenSource?.Dispose();
+            _cancelCommandChainTokenSource = new CancellationTokenSource();
             RunCommandSet(_cancelCommandChainTokenSource.Token).Forget();
         }
 
@@ -97,11 +98,12 @@ namespace Doublsb.Dialog
         {
             _cancelCommandChainTokenSource?.Cancel();
 
-            foreach (var command in _currentCommandChain)
+            foreach (var command in _currentCommands)
             {
-                command.Cleanup(CurrentDialogCommandSet, default).Forget();
+                command.Dispose();
             }
-            _currentCommandChain.Clear();
+
+            _currentCommands.Clear();
 
             _dialogView.SetActive(false);
             actorLineFinished.Invoke(CurrentDialogCommandSet.ActorId);
@@ -148,13 +150,14 @@ namespace Doublsb.Dialog
             Setup();
             _state = State.RunningCommands;
 
-            foreach (var commandDescriptor in CurrentDialogCommandSet.Commands)
+            // todo: optimize so that xml deserialization is not don in runtime but serialized
+            
+            Debug.Log($"Parese: {CurrentDialogCommandSet.Script}");
+            _currentCommands = PeeDialogScriptParser.Parse(CurrentDialogCommandSet.Script, _commandFactory);
+            foreach (var command in _currentCommands)
             {
-                if (_commandFactory.TryCreateCommand(commandDescriptor, out var command))
-                {
-                    _currentCommandChain.Add(command);
-                    await command.Begin(CurrentDialogCommandSet, _fastForwardTokenSource.Token, cancellationToken);
-                }
+                //Debug.Log("Running: " + command.GetType().Name);
+                await command.Run(_fastForwardTokenSource.Token);
             }
 
             _state = State.AwaitingClose;

@@ -1,10 +1,24 @@
 namespace Doublsb.Dialog
 {
+    using TMPro;
     using UnityEngine;
-    using UnityEngine.UI;
 
     internal class BasicPrinter : MonoBehaviour, IPrinter
     {
+        [SerializeField]
+        private GameObject textWindow;
+        
+        [SerializeField]
+        private TMP_Text textComponent;
+
+        [SerializeField]
+        private Color textColor;
+
+        [SerializeField]
+        private FontSize textSize;
+
+        public float Delay { get; set; } = 0.02f;
+        
         public FontSize TextSize
         {
             get => textSize;
@@ -24,18 +38,6 @@ namespace Doublsb.Dialog
                 textComponent.text += $"<color=#{ColorUtility.ToHtmlStringRGBA(textColor)}>";
             }
         }
-
-        [SerializeField]
-        private GameObject textWindow;
-        
-        [SerializeField]
-        private Text textComponent;
-
-        [SerializeField]
-        private Color textColor;
-
-        [SerializeField]
-        private FontSize textSize;
 
         public string Text
         {

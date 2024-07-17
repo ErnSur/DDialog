@@ -13,7 +13,7 @@ public class TestMessage : MonoBehaviour
     {
         var dialogTexts = new List<DialogCommandSet>();
 
-        dialogTexts.Add(new DialogCommandSet("You can easily change text <color=red>color</color>, and <size=+10>size</size> like this.", "Li", () => Show_Example(0)));
+        dialogTexts.Add(new DialogCommandSet("You can easily change text <color=red>color</color>, and <size=+30>size</size> like this.", "Li", () => Show_Example(0)));
 
         dialogTexts.Add(new DialogCommandSet("Just put the command in the string!", "Li", () => Show_Example(1)));
 

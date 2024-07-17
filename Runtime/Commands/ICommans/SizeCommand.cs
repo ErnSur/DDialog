@@ -1,33 +1,90 @@
 namespace Doublsb.Dialog
 {
-    using System.Threading;
-    using Cysharp.Threading.Tasks;
+    using System;
+    using System.Globalization;
+    using UnityEngine;
 
-    public class SizeCommand : ICommand
+    public class SizeCommand : TempValueChangeCommand<FontSize>
     {
-        private readonly FontSize _newFontSize;
-        private readonly IPrinterSettings _printerSettings;
-        private FontSize _previousFontSize;
+        private readonly IPrinter _printer;
 
-        public SizeCommand(string arg1, IPrinterSettings printerSettings)
+        protected override FontSize Value
         {
-            _newFontSize = FontSize.ParseString(arg1);
-            _printerSettings = printerSettings;
+            get => _printer.TextSize;
+            set => _printer.TextSize = value;
         }
 
-        public UniTask Begin(DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken,
-            CancellationToken cancellationToken)
+        public SizeCommand(IPrinter printer, string fontSize)
         {
-            _previousFontSize = _printerSettings.TextSize;
-            _printerSettings.TextSize = _newFontSize;
-            return UniTask.CompletedTask;
+            NewValue = FontSize.ParseString(fontSize);
+            _printer = printer;
+        }
+    }
+
+    public class ColorCommand : TempValueChangeCommand<Color>
+    {
+        private readonly IPrinter _printer;
+
+        protected override Color Value
+        {
+            get => _printer.TextColor;
+            set => _printer.TextColor = value;
         }
 
-        public UniTask End(DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken,
-            CancellationToken cancellationToken)
+        public ColorCommand(IPrinter printer, string color)
         {
-            _printerSettings.TextSize = _previousFontSize;
-            return UniTask.CompletedTask;
+            NewValue = ColorUtility.TryParseHtmlString(color, out var c) ? c : Color.white;
+            _printer = printer;
+        }
+    }
+
+    public class SpeedCommand : TempValueChangeCommand<float>
+    {
+        private readonly IPrinter _printer;
+
+        protected override float Value
+        {
+            get => _printer.Delay;
+            set => _printer.Delay = value;
+        }
+
+        private const float DefaultDelay = 0.02f;
+
+        public SpeedCommand(IPrinter printer, string delay)
+        {
+            _printer = printer;
+            NewValue = ParseSpeed(delay);
+        }
+
+        private float ParseSpeed(string text)
+        {
+            var newValue = Value;
+            switch (text)
+            {
+                case "up":
+                    newValue -= 0.25f;
+                    if (newValue <= 0)
+                        newValue = 0.001f;
+                    break;
+
+                case "down":
+                    newValue += 0.25f;
+                    break;
+
+                case "init" or "end":
+                    newValue = DefaultDelay;
+                    break;
+
+                default:
+                    if (float.TryParse(text, NumberStyles.Any,
+                            CultureInfo.InvariantCulture, out var parsedSpeed))
+                        newValue = parsedSpeed;
+                    else
+                        throw new Exception($"Cannot parse float number: {text}");
+                    break;
+            }
+
+            return newValue;
         }
     }
 }

@@ -5,12 +5,6 @@ namespace Doublsb.Dialog
     using UnityEngine;
 
 
-    public class PrintCommand : ICommand
-    {
-        public string Text;
-    }
-
-
     [RequireComponent(typeof(PrintCommandHandler))]
     public class SizeCommandHandler : MonoBehaviour, IDialogCommandHandler
     {
@@ -26,9 +20,7 @@ namespace Doublsb.Dialog
         public IEnumerator PerformAction(string context, DialogCommandSet dialogCommandSet,
             CancellationToken fastForwardToken)
         {
-            if (context == "end")
-
-                _printCommandHandler.FontSize = FontSize.ParseString(context);
+              //  _printCommandHandler.FontSize = FontSize.ParseString(context);
             yield break;
         }
     }

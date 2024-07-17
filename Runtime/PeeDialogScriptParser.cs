@@ -5,53 +5,26 @@ namespace Doublsb.Dialog
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
-    using Cysharp.Threading.Tasks;
     using UnityEngine;
 
     internal class PeeDialogScriptParser
     {
-        public static List<Func<UniTask>> Parse(string text, ICommandFactory commandFactory)
+        public static List<Command> Parse(string text, ICommandFactory commandFactory)
         {
             try
             {
-                textWithCommands = ReplaceShorthandXmlTags(textWithCommands);
-                var xDoc = XDocument.Parse($"<root>{textWithCommands}</root>");
-                AddCommands(xDoc.Root);
+                text = ReplaceShorthandXmlTags(text);
+                var xDoc = XDocument.Parse($"<root>{text}</root>");
+                var commands=commandFactory.GetCommands(xDoc.Root);
+                return commands;
             }
             catch (Exception e)
             {
-                Debug.LogError($"Error parsing dialog: {textWithCommands}\n{e}");
+                Debug.LogError($"Error parsing dialog: {text}\n{e}");
             }
+            return new List<Command>();
         }
-        
-        private void AddCommands(XElement root, List<Func<UniTask>> commands, ICommandFactory commandFactory)
-        {
-            // Tag start callback
-            if (commandFactory.TryGetCommand(root, out var command))
-            {
-                commands.Add(command);
-            }
 
-            foreach (var node in root.Nodes())
-            {
-                switch (node)
-                {
-                    case XText xText:
-                        Commands.Add(new CommandDescriptor("print", xText.Value));
-                        break;
-                    case XElement xElement:
-                        AddCommands(xElement);
-                        break;
-                }
-            }
-
-            // Tag ends callback
-            if (!root.IsEmpty && command != null)
-            {
-                Commands.Add(new CommandDescriptor(command.Id, "end"));
-            }
-        }
-        
         /// <summary>
         /// Replace shorthand XML tags with full XML tags.
         /// <example>

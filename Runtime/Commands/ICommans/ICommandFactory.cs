@@ -1,20 +1,10 @@
 namespace Doublsb.Dialog
 {
-    using System;
+    using System.Collections.Generic;
+    using System.Xml.Linq;
 
     public interface ICommandFactory
     {
-        public bool TryCreateCommand(CommandDescriptor descriptor, out ICommand command)
-        {
-            switch (descriptor.Id)
-            {
-                case "size":
-                    return new SizeCommand();
-                case "print":
-                    return new PrintCommand();
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(descriptor), descriptor, null);
-            }
-        }
+        List<Command> GetCommands(XElement commandTree);
     }
 }
