@@ -39,10 +39,10 @@ namespace Doublsb.Dialog
             {
                 fontSize = value;
                 _format.Size = fontSize.ToString();
+                Debug.Log($"Font size changed to: {fontSize}");
             }
         }
-
-
+        
         private readonly DialogFormat _format = new DialogFormat();
 
         [SerializeField]
@@ -51,8 +51,10 @@ namespace Doublsb.Dialog
         [SerializeField]
         private FontSize fontSize = 60;
 
-
         public string Identifier => "print";
+
+        private string _lastPrintedText;
+        private DialogCommandSet _lastDialogCommandSet;
 
         private void Awake()
         {
@@ -62,20 +64,25 @@ namespace Doublsb.Dialog
         public IEnumerator PerformAction(string text, DialogCommandSet dialogCommandSet,
             CancellationToken fastForwardToken)
         {
-            dialogCommandSet.PrintText += _format.OpenTagger;
+            if(_lastDialogCommandSet != dialogCommandSet)
+            {
+                _lastPrintedText = string.Empty;
+                _lastDialogCommandSet = dialogCommandSet;
+            }
+            _lastPrintedText = _format.OpenTagger;
 
             for (int i = 0; i < text.Length; i++)
             {
                 var character = text[i];
-                dialogCommandSet.PrintText += character;
-                _dialogView.Text = dialogCommandSet.PrintText + _format.CloseTagger;
+                _lastPrintedText += character;
+                _dialogView.Text = _lastPrintedText + _format.CloseTagger;
 
                 CharacterPrinted?.Invoke(character);
                 if (!fastForwardToken.IsCancellationRequested && Delay != 0)
                     yield return new WaitForSeconds(Delay);
             }
 
-            dialogCommandSet.PrintText += _format.CloseTagger;
+            _lastPrintedText += _format.CloseTagger;
         }
     }
 }

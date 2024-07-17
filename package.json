@@ -1,5 +1,8 @@
 {
-    "name": "com.quickeye.ddialog",
-    "displayName": "D'Dialog",
-    "version": "1.14.0"
+  "name": "com.quickeye.ddialog",
+  "displayName": "Pee'Dialog",
+  "version": "2.0.0",
+  "dependencies": {
+    "com.cysharp.unitask": "2.5.4"
+  }
 }

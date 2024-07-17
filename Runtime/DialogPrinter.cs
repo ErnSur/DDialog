@@ -6,9 +6,11 @@ namespace Doublsb.Dialog
 {
     using System.Linq;
     using System.Threading;
+    using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
     using UnityEngine.Events;
     
+    [RequireComponent(typeof(ICommandFactory))]
     public class DialogPrinter : MonoBehaviour
     {
         public UnityEvent<string> actorLineStarted;
@@ -17,10 +19,6 @@ namespace Doublsb.Dialog
 
         private bool _initialized;
 
-        private Dictionary<string, IDialogCommandHandler> _commandHandlers;
-        
-        private Coroutine _commandChainRoutine;
-
         private int? _selectedOptionIndex;
         
         private IDialogView _dialogView;
@@ -28,6 +26,9 @@ namespace Doublsb.Dialog
         private State _state;
 
         private CancellationTokenSource _fastForwardTokenSource;
+        private CancellationTokenSource _cancelCommandChainTokenSource;
+        private ICommandFactory _commandFactory;
+        private readonly List<ICommand> _currentCommandChain = new List<ICommand>();
 
         private void Awake()
         {
@@ -38,7 +39,7 @@ namespace Doublsb.Dialog
         {
             if (_initialized)
                 return;
-            _commandHandlers = GetComponents<IDialogCommandHandler>().ToDictionary(handler => handler.Identifier);
+            _commandFactory = GetComponent<ICommandFactory>();
             _dialogView = GetComponent<IDialogView>();
             _dialogMenu = GetComponent<IDialogMenuView>();
             _dialogMenu.OptionSelected += index =>
@@ -56,6 +57,8 @@ namespace Doublsb.Dialog
         {
             _fastForwardTokenSource?.Dispose();
             _fastForwardTokenSource = new CancellationTokenSource();
+            _cancelCommandChainTokenSource?.Dispose();
+            _cancelCommandChainTokenSource = new CancellationTokenSource();
             OneTimeInitialize();
             _dialogView.Text = string.Empty;
             _dialogView.SetActive(true);
@@ -66,7 +69,7 @@ namespace Doublsb.Dialog
         {
             _selectedOptionIndex = null;
             CurrentDialogCommandSet = commandSet;
-            _commandChainRoutine = StartCoroutine(RunCommandSet());
+            RunCommandSet(_cancelCommandChainTokenSource.Token).Forget();
         }
 
         public void Run(List<DialogCommandSet> data)
@@ -92,16 +95,13 @@ namespace Doublsb.Dialog
 
         public void Close()
         {
-            if (_commandChainRoutine != null)
-                StopCoroutine(_commandChainRoutine);
+            _cancelCommandChainTokenSource?.Cancel();
 
-            foreach (var item in CurrentDialogCommandSet.Commands)
+            foreach (var command in _currentCommandChain)
             {
-                if (_commandHandlers.TryGetValue(item.CommandId.ToString(), out var handler))
-                {
-                    StartCoroutine(handler.CleanupAction(item.Argument, CurrentDialogCommandSet));
-                }
+                command.Cleanup(CurrentDialogCommandSet, default).Forget();
             }
+            _currentCommandChain.Clear();
 
             _dialogView.SetActive(false);
             actorLineFinished.Invoke(CurrentDialogCommandSet.ActorId);
@@ -143,16 +143,17 @@ namespace Doublsb.Dialog
             }
         }
 
-        private IEnumerator RunCommandSet()
+        private async UniTask RunCommandSet(CancellationToken cancellationToken)
         {
             Setup();
             _state = State.RunningCommands;
 
-            foreach (var command in CurrentDialogCommandSet.Commands)
+            foreach (var commandDescriptor in CurrentDialogCommandSet.Commands)
             {
-                if (_commandHandlers.TryGetValue(command.CommandId.ToString(), out var handler))
+                if (_commandFactory.TryCreateCommand(commandDescriptor, out var command))
                 {
-                    yield return handler.PerformAction(command.Argument, CurrentDialogCommandSet, _fastForwardTokenSource.Token);
+                    _currentCommandChain.Add(command);
+                    await command.Begin(CurrentDialogCommandSet, _fastForwardTokenSource.Token, cancellationToken);
                 }
             }
 

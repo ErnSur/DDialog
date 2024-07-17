@@ -7,14 +7,12 @@ namespace Doublsb.Dialog
     using System.Xml.Linq;
     using UnityEngine;
     using UnityEngine.Events;
-    
+
     public class DialogCommandSet
     {
         public readonly string ActorId;
-        public readonly List<DialogCommand> Commands = new List<DialogCommand>();
+        public readonly List<CommandDescriptor> Commands = new List<CommandDescriptor>();
         public readonly List<MenuOption> SelectList = new List<MenuOption>();
-
-        public string PrintText = string.Empty;
 
         public readonly bool CanBeSkipped;
         public UnityAction Callback;
@@ -85,48 +83,42 @@ namespace Doublsb.Dialog
         private void ParseCommands(XElement root)
         {
             // Tag start callback
-            if (TryParseCommand(root, out var command))
+            if (TryCreateDescriptor(root, out var command))
             {
                 Commands.Add(command);
             }
+
             foreach (var node in root.Nodes())
             {
                 switch (node)
                 {
                     case XText xText:
-                        Commands.Add(new DialogCommand(CommandId.print, xText.Value));
+                        Commands.Add(new CommandDescriptor("print", xText.Value));
                         break;
                     case XElement xElement:
                         ParseCommands(xElement);
                         break;
                 }
             }
-            
+
             // Tag ends callback
             if (!root.IsEmpty && command != null)
             {
-                Commands.Add(new DialogCommand(command.CommandId, "end"));
+                Commands.Add(new CommandDescriptor(command.Id, "end"));
             }
         }
 
-        private static bool TryParseCommand(XElement commandElement, out DialogCommand command)
+        private static bool TryCreateDescriptor(XElement commandElement, out CommandDescriptor commandDescriptor)
         {
             if (commandElement.Name.LocalName == "root")
             {
-                command = null;
+                commandDescriptor = null;
                 return false;
             }
+
             var commandName = commandElement.Name.LocalName;
-
-            if (Enum.TryParse(commandName, out CommandId commandId))
-            {
-                command = new DialogCommand(commandId, commandElement.FirstAttribute?.Value);
-                return true;
-            }
-
-            Debug.LogError($"Cannot parse command content: {commandName}");
-            command = null;
-            return false;
+            commandDescriptor = new CommandDescriptor(commandName, commandElement.FirstAttribute?.Value);
+            return true;
         }
     }
 }
