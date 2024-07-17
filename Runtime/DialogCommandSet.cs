@@ -13,7 +13,6 @@ namespace Doublsb.Dialog
         public readonly string ActorId;
         public readonly List<DialogCommand> Commands = new List<DialogCommand>();
         public readonly List<MenuOption> SelectList = new List<MenuOption>();
-        public readonly DialogFormat Format = new DialogFormat();
         public readonly AudioClip[] ChatSoundEffects;
 
         public string PrintText = string.Empty;

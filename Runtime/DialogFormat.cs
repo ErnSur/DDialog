@@ -3,14 +3,8 @@ namespace Doublsb.Dialog
     using System;
     using System.Text.RegularExpressions;
 
-    /// <summary>
-    /// You can get RichText tagger of size and color.
-    /// </summary>
-    public class DialogFormat
+    internal class DialogFormat
     {
-        //================================================
-        //Private Variable
-        //================================================
         public string DefaultSize = "60";
         private string _defaultColor = "white";
 
@@ -26,8 +20,10 @@ namespace Doublsb.Dialog
             _color = string.Empty;
             _size = string.Empty;
 
-            if (defaultSize != string.Empty) DefaultSize = defaultSize;
-            if (defaultColor != string.Empty) _defaultColor = defaultColor;
+            if (defaultSize != string.Empty)
+                DefaultSize = defaultSize;
+            if (defaultColor != string.Empty)
+                _defaultColor = defaultColor;
         }
 
         public string Color
@@ -37,7 +33,8 @@ namespace Doublsb.Dialog
                 if (isColorValid(value))
                 {
                     _color = value;
-                    if (_size == string.Empty) _size = DefaultSize;
+                    if (_size == string.Empty)
+                        _size = DefaultSize;
                 }
             }
 
@@ -51,7 +48,8 @@ namespace Doublsb.Dialog
                 if (isSizeValid(value))
                 {
                     _size = value;
-                    if (_color == string.Empty) _color = _defaultColor;
+                    if (_color == string.Empty)
+                        _color = _defaultColor;
                 }
             }
 
@@ -62,8 +60,10 @@ namespace Doublsb.Dialog
         {
             get
             {
-                if (isValid) return $"<color={Color}><size={Size}>";
-                else return string.Empty;
+                if (isValid)
+                    return $"<color={Color}><size={Size}>";
+                else
+                    return string.Empty;
             }
         }
 
@@ -71,14 +71,17 @@ namespace Doublsb.Dialog
         {
             get
             {
-                if (isValid) return "</size></color>";
-                else return string.Empty;
+                if (isValid)
+                    return "</size></color>";
+                else
+                    return string.Empty;
             }
         }
 
         public void Resize(string command)
         {
-            if (_size == string.Empty) Size = DefaultSize;
+            if (_size == string.Empty)
+                Size = DefaultSize;
 
             switch (command)
             {
@@ -116,6 +119,5 @@ namespace Doublsb.Dialog
         {
             return float.TryParse(Size, out _);
         }
-
     }
 }
