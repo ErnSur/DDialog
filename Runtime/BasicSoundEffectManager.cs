@@ -40,8 +40,6 @@ namespace Doublsb.Dialog
             if (_soundEffectProvider != null &&
                 _soundEffectProvider.TryGetChatSoundEffects(dialogData.ActorId, out var actorClips))
                 clips = actorClips;
-            if (dialogData.ChatSoundEffects is { Length: > 0 })
-                clips = dialogData.ChatSoundEffects;
             if (clips == null || clips.Length == 0)
                 return;
 

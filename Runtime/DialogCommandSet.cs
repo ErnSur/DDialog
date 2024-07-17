@@ -13,7 +13,6 @@ namespace Doublsb.Dialog
         public readonly string ActorId;
         public readonly List<DialogCommand> Commands = new List<DialogCommand>();
         public readonly List<MenuOption> SelectList = new List<MenuOption>();
-        public readonly AudioClip[] ChatSoundEffects;
 
         public string PrintText = string.Empty;
 
@@ -21,11 +20,10 @@ namespace Doublsb.Dialog
         public UnityAction Callback;
 
         public DialogCommandSet(string originalString, string actorId = "", UnityAction callback = null,
-            bool canBeSkipped = true, AudioClip[] chatSoundEffects = null)
+            bool canBeSkipped = true)
         {
             Initialize(originalString);
 
-            ChatSoundEffects = chatSoundEffects;
             CanBeSkipped = canBeSkipped;
             Callback = callback;
             ActorId = actorId;
