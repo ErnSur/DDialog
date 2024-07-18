@@ -2,9 +2,8 @@ namespace Doublsb.Dialog
 {
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UnityEngine;
 
-    public class PrintCommand : ICommand
+    public class PrintCommand : Command, ICommand
     {
         private readonly IPrinter _printer;
         private readonly string _text;
@@ -15,13 +14,13 @@ namespace Doublsb.Dialog
             _text = text;
         }
 
-        public async UniTask Begin(CancellationToken cancellationToken)
+        async UniTask ICommand.Begin(CancellationToken cancellationToken)
         {
             for (int i = 0; i < _text.Length; i++)
             {
                 var character = _text[i];
-                _printer.Text += character;
-                //CharacterPrinted?.Invoke(character);
+                _printer.Text.Append(character);
+                _printer.Print();
                 if (!cancellationToken.IsCancellationRequested && _printer.Delay != 0)
                     await UniTask.WaitForSeconds(_printer.Delay, false, PlayerLoopTiming.Update);
             }

@@ -4,7 +4,7 @@ namespace Doublsb.Dialog
     using Cysharp.Threading.Tasks;
     using UnityEngine;
 
-    public class SoundCommand : ICommand
+    public class SoundCommand : Command, ICommand
     {
         private readonly AudioSource _audioSource;
         private readonly AudioClip _sound;
@@ -15,7 +15,7 @@ namespace Doublsb.Dialog
             _audioSource = audioSource;
         }
 
-        public UniTask Begin(CancellationToken cancellationToken)
+        UniTask ICommand.Begin(CancellationToken cancellationToken)
         {
             _audioSource.PlayOneShot(_sound);
             return UniTask.CompletedTask;

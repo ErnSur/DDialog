@@ -1,10 +1,13 @@
 namespace Doublsb.Dialog
 {
+    using System;
+    using System.Text;
     using TMPro;
     using UnityEngine;
 
     internal class BasicPrinter : MonoBehaviour, IPrinter
     {
+        public event Action TextPrinted;
         [SerializeField]
         private GameObject textWindow;
         
@@ -39,10 +42,12 @@ namespace Doublsb.Dialog
             }
         }
 
-        public string Text
+        public StringBuilder Text { get; set; } = new StringBuilder();
+
+        public void Print()
         {
-            get => textComponent.text;
-            set => textComponent.text = value;
+            textComponent.text = Text.ToString();
+            TextPrinted?.Invoke();
         }
 
         public void Reset()
@@ -50,7 +55,8 @@ namespace Doublsb.Dialog
             TextSize = 60;
             TextColor = Color.white;
             Delay = 0.02f;
-            Text = string.Empty;
+            Text.Clear();
+            textComponent.text = "";
         }
 
         public void SetActive(bool active)

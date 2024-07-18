@@ -2,15 +2,13 @@ namespace Doublsb.Dialog
 {
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UnityEngine;
-
-    public abstract class TempValueChangeCommand<T> : ICommand
+    public abstract class TempValueChangeCommand<T> : Command, ICommand
     {
         protected T NewValue { get; set; }
         protected abstract T Value { get; set; }
         private T _previousValue;
 
-        public UniTask Begin(CancellationToken cancellationToken)
+        UniTask ICommand.Begin(CancellationToken cancellationToken)
         {
             _previousValue = Value;
             Value = NewValue;
@@ -18,7 +16,7 @@ namespace Doublsb.Dialog
             return UniTask.CompletedTask;
         }
 
-        public UniTask End(CancellationToken cancellationToken)
+        UniTask ICommand.End(CancellationToken cancellationToken)
         {
             Value = _previousValue;
             //Debug.Log($"[{GetType().Name}] Set:{Value}");

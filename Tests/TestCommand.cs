@@ -4,25 +4,25 @@ namespace Tests
     using Cysharp.Threading.Tasks;
     using Doublsb.Dialog;
 
-    internal class TestCommand : ICommand
-    {
-        public bool Began, Ended, Disposed;
-
-        protected override async UniTask Begin(CancellationToken cancellationToken)
-        {
-            await UniTask.Delay(1);
-            Began = true;
-        }
-
-        protected override async UniTask End(CancellationToken cancellationToken)
-        {
-            await UniTask.Delay(1);
-            Ended = true;
-        }
-
-        public override void Dispose()
-        {
-            Disposed = true;
-        }
-    }
+    // internal class TestCommand : ICommand
+    // {
+    //     public bool Began, Ended, Disposed;
+    //
+    //     protected override async UniTask Begin(CancellationToken cancellationToken)
+    //     {
+    //         await UniTask.Delay(1);
+    //         Began = true;
+    //     }
+    //
+    //     protected override async UniTask End(CancellationToken cancellationToken)
+    //     {
+    //         await UniTask.Delay(1);
+    //         Ended = true;
+    //     }
+    //
+    //     public override void Dispose()
+    //     {
+    //         Disposed = true;
+    //     }
+    // }
 }

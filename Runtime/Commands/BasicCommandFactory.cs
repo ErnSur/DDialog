@@ -1,34 +1,8 @@
 namespace Doublsb.Dialog
 {
     using System.Linq;
+    using Cysharp.Threading.Tasks;
     using UnityEngine;
-
-    public class EmoteCommandFactory : MonoBehaviour, ICommandFactory
-    {
-        public bool TryGetCommand(string commandId, string[] args, out ICommand command)
-        {
-            throw new System.NotImplementedException();
-        }
-        
-        public string Identifier => "e";
-        
-        private DefaultActorManager _actorManager;
-
-        private void Awake()
-        {
-            _actorManager = GetComponent<DefaultActorManager>();
-        }
-
-        // attributes could be used for handling commands?
-        // [CommandHandler("emote")]
-        // But then how do you handle dynamic command identifiers? do such command should exist even?
-        // for something like emoji recognition they should though
-        public IEnumerator PerformAction(string emoteId, ActorLines actorLines, CancellationToken fastForwardToken)
-        {
-            _actorManager.Emote(actorLines.ActorId, emoteId);
-            yield break;
-        }
-    }
 
     [RequireComponent(typeof(IPrinter))]
     public class BasicCommandFactory : MonoBehaviour, ICommandFactory
@@ -41,16 +15,23 @@ namespace Doublsb.Dialog
         [SerializeField]
         private AudioSource audioSource;
 
+        private DefaultActorManager _actorManager;
+
         private void Awake()
         {
             _printer = GetComponent<IPrinter>();
+            _actorManager = GetComponent<DefaultActorManager>();
         }
 
-        public bool TryGetCommand(string commandId, string[] args, out ICommand command)
+        bool ICommandFactory.TryGetCommand(string commandId, string[] args, ICommand parent, out ICommand command)
         {
             var arg1 = args.FirstOrDefault();
             switch (commandId)
             {
+                case "actor":
+                    // make it write to actor  manager
+                    command = new ActorCommand(_actorManager, arg1);
+                    return true;
                 case "print":
                     command = new PrintCommand(_printer, arg1);
                     return true;
@@ -68,6 +49,21 @@ namespace Doublsb.Dialog
                     return true;
                 case "sound" when arg1 != null && sounds.TryGetValue(arg1, out var clip):
                     command = new SoundCommand(clip, audioSource);
+                    return true;
+                case "emote":
+                    if (parent.Root is ActorCommand actor)
+                    {
+                        command = new FuncCommand(() => _actorManager.Emote(actor.ActorId, arg1));
+                        return true;
+                    }
+                    command = null;
+                    return false;
+                case "click":
+                    command = new FuncCommand(async ct =>
+                    {
+                        while (!Input.GetMouseButtonDown(0) && !ct.IsCancellationRequested)
+                            await UniTask.NextFrame(ct);
+                    });
                     return true;
                 default:
                     command = null;

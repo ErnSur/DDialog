@@ -29,7 +29,7 @@ namespace Doublsb.Dialog
         private CancellationTokenSource _fastForwardTokenSource;
         private CancellationTokenSource _cancelCommandChainTokenSource;
         private ICommandFactory _commandFactory;
-        private Command[] _currentCommands = Array.Empty<Command>();
+        private ICommand _rootCommand;
 
         private void Awake()
         {
@@ -99,12 +99,12 @@ namespace Doublsb.Dialog
         {
             _cancelCommandChainTokenSource?.Cancel();
 
-            foreach (var command in _currentCommands)
+            foreach (var command in _rootCommand.OfType<IDisposable>())
             {
                 command.Dispose();
             }
 
-            _currentCommands = null;
+            _rootCommand = null;
 
             _printer.SetActive(false);
             actorLineFinished.Invoke(CurrentActorLines.ActorId);
@@ -151,11 +151,10 @@ namespace Doublsb.Dialog
             Setup();
             _state = State.RunningCommands;
 
-            _currentCommands = CommandParser.ParseCommands(CurrentActorLines.Script, _commandFactory)
-                .Select(c => new Command(c)).ToArray();
+            _rootCommand = CommandParser.ParseCommands(CurrentActorLines.Script,CurrentActorLines.ActorId, _commandFactory);
             
-            foreach (var command in _currentCommands)
-                await command.Execute(_fastForwardTokenSource.Token);
+            foreach (var command in _rootCommand)
+                await command.Act(_fastForwardTokenSource.Token);
 
             _state = State.AwaitingClose;
         }
@@ -166,24 +165,5 @@ namespace Doublsb.Dialog
                 _fastForwardTokenSource.Cancel();
         }
         
-        private class Command
-        {
-            private bool _runEndNext;
-            private readonly ICommand _command;
-            public Command(ICommand command) => _command = command;
-
-            public async UniTask Execute(CancellationToken cancellationToken = default)
-            {
-                if (_runEndNext)
-                    await _command.End(cancellationToken);
-                else
-                {
-                    await _command.Begin(cancellationToken);
-                    _runEndNext = true;
-                }
-            }
-
-            public void Dispose() => _command.Dispose();
-        }
     }
 }

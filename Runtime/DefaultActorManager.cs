@@ -41,7 +41,7 @@ namespace Doublsb.Dialog
             return false;
         }
 
-        private void Show(string actorId)
+        public void Show(string actorId)
         {
             if (string.IsNullOrEmpty(actorId))
             {

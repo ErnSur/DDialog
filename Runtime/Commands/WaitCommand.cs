@@ -4,7 +4,7 @@ namespace Doublsb.Dialog
     using Cysharp.Threading.Tasks;
     using UnityEngine;
 
-    public class WaitCommand : ICommand
+    public class WaitCommand : Command, ICommand
     {
         private readonly float _waitTime;
 
@@ -17,7 +17,7 @@ namespace Doublsb.Dialog
             Debug.LogError($"Cannot parse float number: {waitTime}");
         }
 
-        public async UniTask Begin(CancellationToken cancellationToken)
+        async UniTask ICommand.Begin(CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
                 return;

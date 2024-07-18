@@ -3,7 +3,7 @@ namespace Doublsb.Dialog
     using UnityEngine;
 
     [RequireComponent(typeof(DialogSystem))]
-    [RequireComponent(typeof(PrintCommandHandler))]
+    [RequireComponent(typeof(BasicPrinter))]
     internal class BasicSoundEffectManager : MonoBehaviour
     {
         private ComponentPool<AudioSource> _audioSourcesPool;
@@ -14,20 +14,21 @@ namespace Doublsb.Dialog
         private ISoundEffectProvider _soundEffectProvider;
         public AudioClip[] defaultChatSoundEffects;
         private DialogSystem _dialogSystem;
+        private BasicPrinter _printer;
         private void Awake()
         {
             _soundEffectProvider = gameObject.GetComponent<ISoundEffectProvider>();
             _dialogSystem = GetComponent<DialogSystem>();
 
-            var printCommandHandler = gameObject.GetComponent<PrintCommandHandler>();
-            printCommandHandler.CharacterPrinted += OnCharacterPrinted;
             
             _audioSourcesPool = new ComponentPool<AudioSource>(gameObject, 5);
+            _printer = gameObject.GetComponent<BasicPrinter>();
+            _printer.TextPrinted += OnCharacterPrinted;
         }
 
-        private void OnCharacterPrinted(char character)
+        private void OnCharacterPrinted()
         {
-            if (character != ' ')
+            if (_printer.Text[^1] != ' ')
                 Play_ChatSE();
         }
         

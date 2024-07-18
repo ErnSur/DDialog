@@ -1,7 +1,6 @@
 namespace Doublsb.Dialog
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
@@ -9,18 +8,19 @@ namespace Doublsb.Dialog
 
     internal static class CommandParser
     {
-        public static List<ICommand> ParseCommands(string text, ICommandFactory commandFactory)
+        public static ICommand ParseCommands(string text, string actorId, ICommandFactory commandFactory)
         {
             var commandTree = Parse(text);
-            return GetCommands(commandTree, commandFactory);
+            commandTree.args = new[] { actorId };
+            return commandFactory.CreateCommandTree(commandTree);
         }
-        
+
         private static CommandTag Parse(string text)
         {
             try
             {
                 text = ReplaceShorthandXmlTags(text);
-                var xDoc = XDocument.Parse($"<root>{text}</root>");
+                var xDoc = XDocument.Parse($"<actor>{text}</actor>");
                 return XmlToCommandDefinition(xDoc.Root);
             }
             catch (Exception e)
@@ -29,33 +29,6 @@ namespace Doublsb.Dialog
             }
 
             return null;
-        }
-        
-        private static List<ICommand> GetCommands(CommandTag commandTree, ICommandFactory commandFactory)
-        {
-            var result = new List<ICommand>();
-            AddCommands(commandTree, result, commandFactory);
-            return result;
-        }
-
-        private static void AddCommands(CommandTag root, List<ICommand> commands, ICommandFactory commandFactory)
-        {
-            // Tag start callback
-            if (commandFactory.TryGetCommand(root.name, root.args, out var command))
-            {
-                commands.Add(command);
-            }
-
-            foreach (var child in root.children)
-            {
-                AddCommands(child, commands, commandFactory);
-            }
-
-            // Tag ends callback
-            if (!root.IsEmpty && command != null)
-            {
-                commands.Add(command);
-            }
         }
 
         private static CommandTag XmlToCommandDefinition(XElement xmlRoot)

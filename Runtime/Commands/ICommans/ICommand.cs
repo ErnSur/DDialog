@@ -1,62 +1,58 @@
 namespace Doublsb.Dialog
 {
-    using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Threading;
     using Cysharp.Threading.Tasks;
 
-    public interface ICommand2
+    public interface ICommand : IEnumerable<ICommand>
     {
+        ICommand Root { get; set; }
+        ICommand Parent { get; set; }
+        List<ICommand> Children { get; set; }
+        
+        /// <summary>
+        /// Returns a collection of the descendant ICommands for this command
+        /// </summary>
+        IEnumerable<ICommand> Descendants()
+        {
+            foreach (var child in Children)
+            {
+                yield return child;
+                foreach (var descendant in child.Descendants())
+                    yield return descendant;
+            }
+        }
+
         /// <summary>
         /// Called on opening tag and second time if node had any children
         /// </summary>
-        UniTask Act(CancellationToken cancellationToken);
-    }
-    
-    public abstract class CommandWithClosingTag : ICommand2
-    {
-        private bool _runEndNext;
         public async UniTask Act(CancellationToken cancellationToken)
         {
-            if (_runEndNext)
-                await End(cancellationToken);
-            else
-            {
-                await Begin(cancellationToken);
-                _runEndNext = true;
-            }
+            await Begin(cancellationToken);
+            foreach (var descendant in Descendants())
+                await descendant.Act(cancellationToken);
+            await End(cancellationToken);
         }
         
         /// <summary>
         /// Called on opening tag
         /// </summary>
-        protected abstract UniTask Begin(CancellationToken cancellationToken);
+        protected UniTask Begin(CancellationToken cancellationToken);
 
         /// <summary>
         /// Called on closing tag if node had any children
         /// </summary>
-        protected abstract UniTask End(CancellationToken cancellationToken);
-    }
-    
-    public interface ICommand : IDisposable
-    {
-        /// <summary>
-        /// Called on opening tag
-        /// </summary>
-        UniTask Begin(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Called on closing tag if node had any children
-        /// </summary>
-        UniTask End(CancellationToken cancellationToken)
+        protected UniTask End(CancellationToken cancellationToken) => UniTask.CompletedTask;
+        
+        IEnumerator<ICommand> IEnumerable<ICommand>.GetEnumerator()
         {
-            return UniTask.CompletedTask;
+            return Descendants().GetEnumerator();
         }
 
-        /// <summary>
-        /// Called when the dialog is finished.
-        /// </summary>
-        void IDisposable.Dispose()
+        IEnumerator IEnumerable.GetEnumerator()
         {
+            return GetEnumerator();
         }
     }
 }
