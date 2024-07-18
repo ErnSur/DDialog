@@ -7,7 +7,7 @@ namespace Doublsb.Dialog
     using System.Xml.Linq;
     using UnityEngine;
 
-    internal class PeeDialogScriptParser
+    internal class CommandParser
     {
         public static List<Command> Parse(string text, ICommandFactory commandFactory)
         {
