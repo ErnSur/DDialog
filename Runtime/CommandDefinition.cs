@@ -4,7 +4,7 @@ namespace Doublsb.Dialog
     using System.Collections.Generic;
 
     [Serializable]
-    internal class CommandDefinition
+    public class CommandDefinition
     {
         public string name;
         public string[] args = Array.Empty<string>();
@@ -18,5 +18,7 @@ namespace Doublsb.Dialog
             this.name = name;
             args = strings;
         }
+
+        public bool IsEmpty => children?.Count == 0;
     }
 }

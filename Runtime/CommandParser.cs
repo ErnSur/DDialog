@@ -7,7 +7,7 @@ namespace Doublsb.Dialog
     using System.Xml.Linq;
     using UnityEngine;
 
-    internal class CommandParser
+    internal static class CommandParser
     {
         public static List<Command> Parse(string text, ICommandFactory commandFactory)
         {
@@ -15,14 +15,41 @@ namespace Doublsb.Dialog
             {
                 text = ReplaceShorthandXmlTags(text);
                 var xDoc = XDocument.Parse($"<root>{text}</root>");
-                var commands=commandFactory.GetCommands(xDoc.Root);
+                var commandDef = XmlToCommandDefinition(xDoc.Root);
+                var commands = commandFactory.GetCommands(commandDef);
                 return commands;
             }
             catch (Exception e)
             {
                 Debug.LogError($"Error parsing dialog: {text}\n{e}");
             }
+
             return new List<Command>();
+        }
+
+        private static CommandDefinition XmlToCommandDefinition(XElement xmlRoot)
+        {
+            // Tag start callback
+            var root = new CommandDefinition
+            {
+                name = xmlRoot.Name.LocalName,
+                args = xmlRoot.Attributes().Select(a => a.Value).ToArray()
+            };
+
+            foreach (var node in xmlRoot.Nodes())
+            {
+                switch (node)
+                {
+                    case XText xText:
+                        root.children.Add(new CommandDefinition("print", xText.Value));
+                        break;
+                    case XElement xElement:
+                        root.children.Add(XmlToCommandDefinition(xElement));
+                        break;
+                }
+            }
+
+            return root;
         }
 
         /// <summary>

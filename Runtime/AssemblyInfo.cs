@@ -1,7 +1,3 @@
-namespace Doublsb.Dialog
-{
-    public class AssemblyInfo
-    {
-        
-    }
-}
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("PeeDialog.Tests")]

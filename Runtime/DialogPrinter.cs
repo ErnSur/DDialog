@@ -153,11 +153,11 @@ namespace Doublsb.Dialog
             // todo: optimize so that xml deserialization is not don in runtime but serialized
             
             Debug.Log($"Parese: {CurrentDialogCommandSet.Script}");
-            _currentCommands = PeeDialogScriptParser.Parse(CurrentDialogCommandSet.Script, _commandFactory);
+            _currentCommands = CommandParser.Parse(CurrentDialogCommandSet.Script, _commandFactory);
             foreach (var command in _currentCommands)
             {
                 //Debug.Log("Running: " + command.GetType().Name);
-                await command.Run(_fastForwardTokenSource.Token);
+                await command.Execute(_fastForwardTokenSource.Token);
             }
 
             _state = State.AwaitingClose;

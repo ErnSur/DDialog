@@ -9,7 +9,7 @@ namespace Doublsb.Dialog
     public abstract class Command : IDisposable
     {
         private bool _runEndNext;
-        public async UniTask Run(CancellationToken cancellationToken)
+        public async UniTask Execute(CancellationToken cancellationToken = default)
         {
             if(!_runEndNext)
             {
@@ -35,7 +35,7 @@ namespace Doublsb.Dialog
         /// <summary>
         /// Called when the dialog is finished.
         /// </summary>
-        public  void  Dispose()
+        public virtual void  Dispose()
         {
         }
     }

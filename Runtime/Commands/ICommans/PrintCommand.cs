@@ -21,8 +21,6 @@ namespace Doublsb.Dialog
             {
                 var character = _text[i];
                 _printer.Text += character;
-                Debug.Log($"Print:{ _printer.Text}");
-
                 //CharacterPrinted?.Invoke(character);
                 if (!cancellationToken.IsCancellationRequested && _printer.Delay != 0)
                     await UniTask.WaitForSeconds(_printer.Delay, false, PlayerLoopTiming.Update);

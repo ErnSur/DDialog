@@ -27,8 +27,17 @@ namespace Tests
                 Text += $"<color=#{ColorUtility.ToHtmlStringRGBA(_textColor)}>";
             }
         }
+
         public string Text { get; set; }
+
+        public string TextNoParse => $"<noparse>{Text}</noparse>";
+
         public float Delay { get; set; }
+        
+        public void LogText()
+        {
+            Debug.Log($"<noparse>{Text}</noparse>");
+        }
         
         public void SetActive(bool active)
         {

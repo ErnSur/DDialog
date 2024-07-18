@@ -14,15 +14,24 @@ namespace Doublsb.Dialog
         {
             _previousValue = Value;
             Value = NewValue;
-            Debug.Log($"[{GetType().Name}] Set:{Value}");
+            //Debug.Log($"[{GetType().Name}] Set:{Value}");
             return UniTask.CompletedTask;
         }
 
         protected override UniTask End(CancellationToken cancellationToken)
         {
             Value = _previousValue;
-            Debug.Log($"[{GetType().Name}] Set:{Value}");
+            //Debug.Log($"[{GetType().Name}] Set:{Value}");
             return UniTask.CompletedTask;
+        }
+
+        public override string ToString()
+        {
+            var typeName = GetType().Name;
+            // remove "command" from the end
+            typeName = typeName.Substring(0, typeName.Length - 7);
+            typeName = typeName.ToLowerInvariant();
+            return $"<{typeName}={NewValue}>";
         }
     }
 }
