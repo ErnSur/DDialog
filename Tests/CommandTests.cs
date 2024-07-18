@@ -13,7 +13,7 @@ namespace Tests
         private const string Red = "red";
         private const string PrintContent = "Content";
         private readonly string _script = $"print{Tag(ColorTag, Red, PrintContent)}print";
-        private IEnumerable<Command> _commands;
+        private IEnumerable<ICommand> _commands;
         private ICommandFactory _commandFactory;
         private TestPrinter _printer;
 
@@ -22,8 +22,7 @@ namespace Tests
         {
             _printer = new TestPrinter();
             _commandFactory = new BasicCommandFactory(_printer);
-            var tagTree = CommandParser.Parse(_script);
-            _commands = _commandFactory.GetCommands(tagTree);
+            _commands = CommandParser.ParseCommands(_script,_commandFactory);
         }
 
         [Test]

@@ -4,7 +4,7 @@ namespace Doublsb.Dialog
     using Cysharp.Threading.Tasks;
     using UnityEngine;
 
-    public class PrintCommand : Command
+    public class PrintCommand : ICommand
     {
         private readonly IPrinter _printer;
         private readonly string _text;
@@ -15,7 +15,7 @@ namespace Doublsb.Dialog
             _text = text;
         }
 
-        protected override async UniTask Begin(CancellationToken cancellationToken)
+        public async UniTask Begin(CancellationToken cancellationToken)
         {
             for (int i = 0; i < _text.Length; i++)
             {

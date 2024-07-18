@@ -4,7 +4,7 @@ namespace Tests
     using Cysharp.Threading.Tasks;
     using Doublsb.Dialog;
 
-    internal class TestCommand : Command
+    internal class TestCommand : ICommand
     {
         public bool Began, Ended, Disposed;
 
