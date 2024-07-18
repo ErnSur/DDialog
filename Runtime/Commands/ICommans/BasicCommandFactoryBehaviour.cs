@@ -13,17 +13,17 @@ namespace Doublsb.Dialog
             _printer = printer;
         }
 
-        public List<Command> GetCommands(CommandDefinition commandTree)
+        public List<Command> GetCommands(CommandTag commandTree)
         {
             var result = new List<Command>();
             AddCommands(commandTree, result);
             return result;
         }
 
-        private void AddCommands(CommandDefinition root, List<Command> commands)
+        private void AddCommands(CommandTag root, List<Command> commands)
         {
             // Tag start callback
-            if (TryGetCommand(root.name, root.args.FirstOrDefault(), out var command))
+            if (TryGetCommand(root.name, root.args, out var command))
             {
                 commands.Add(command);
             }
@@ -40,9 +40,10 @@ namespace Doublsb.Dialog
             }
         }
 
-        private bool TryGetCommand(string commandId, string arg1, out Command command)
+        private bool TryGetCommand(string commandId, string[] args, out Command command)
         {
 //            Debug.Log($"TryGetCommand: {commandId}, {arg1}");
+            var arg1 = args.FirstOrDefault();
             switch (commandId)
             {
                 case "print":
@@ -78,9 +79,11 @@ namespace Doublsb.Dialog
             _factory = new BasicCommandFactory(printer);
         }
 
-        public List<Command> GetCommands(CommandDefinition commandTree)
+        public List<Command> GetCommands(CommandTag commandTree)
         {
-            return _factory.GetCommands(commandTree);
+            if (_factory == null)
+                Awake();
+            return _factory!.GetCommands(commandTree);
         }
     }
 }

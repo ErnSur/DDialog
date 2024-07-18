@@ -20,7 +20,7 @@ namespace Doublsb.Dialog
                 audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        public IEnumerator PerformAction(string soundId, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken)
+        public IEnumerator PerformAction(string soundId, ActorLines actorLines, CancellationToken fastForwardToken)
         {
             if (!sounds.TryGetValue(soundId, out var clip))
             {

@@ -206,7 +206,6 @@ namespace Doublsb.Dialog
             float value = defaultValue.value;
             FontSizeUnit unit = defaultValue.unit;
 
-            Debug.Log($"floatStr: {floatStr}, unitStr: {unitStr}.from: {str}");            
             if (float.TryParse(floatStr,NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var v))
                 value = v;
 

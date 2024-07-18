@@ -3,7 +3,7 @@ namespace Doublsb.Dialog
     using UnityEngine;
     using UnityEngine.UI;
 
-    [RequireComponent(typeof(DialogPrinter))]
+    [RequireComponent(typeof(DialogSystem))]
     public class DefaultActorManager : MonoBehaviour, ISoundEffectProvider
     {
         [SerializeField]
@@ -12,19 +12,19 @@ namespace Doublsb.Dialog
         [SerializeField]
         private string defaultEmotionId = "Normal";
 
-        private DialogPrinter _dialogPrinter;
+        private DialogSystem _dialogSystem;
 
         private void Awake()
         {
-            _dialogPrinter = GetComponent<DialogPrinter>();
-            _dialogPrinter.actorLineStarted.AddListener(Show);
-            _dialogPrinter.actorLineFinished.AddListener(OnActorLineFinished);
+            _dialogSystem = GetComponent<DialogSystem>();
+            _dialogSystem.actorLineStarted.AddListener(Show);
+            _dialogSystem.actorLineFinished.AddListener(OnActorLineFinished);
         }
         
         private void OnDestroy()
         {
-            _dialogPrinter.actorLineStarted.RemoveListener(Show);
-            _dialogPrinter.actorLineFinished.RemoveListener(OnActorLineFinished);
+            _dialogSystem.actorLineStarted.RemoveListener(Show);
+            _dialogSystem.actorLineFinished.RemoveListener(OnActorLineFinished);
         }
 
         private void OnActorLineFinished(string _) => HideAll();

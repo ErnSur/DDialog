@@ -45,6 +45,14 @@ namespace Doublsb.Dialog
             set => textComponent.text = value;
         }
 
+        public void Reset()
+        {
+            TextSize = 60;
+            TextColor = Color.white;
+            Delay = 0.02f;
+            Text = string.Empty;
+        }
+
         public void SetActive(bool active)
         {
             textWindow.SetActive(active);

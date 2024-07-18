@@ -4,16 +4,16 @@ namespace Doublsb.Dialog
     using System.Collections.Generic;
 
     [Serializable]
-    public class CommandDefinition
+    public class CommandTag
     {
         public string name;
         public string[] args = Array.Empty<string>();
-        public List<CommandDefinition> children = new List<CommandDefinition>();
-        public CommandDefinition()
+        public List<CommandTag> children = new List<CommandTag>();
+        public CommandTag()
         {
         }
 
-        public CommandDefinition(string name, params string[] strings)
+        public CommandTag(string name, params string[] strings)
         {
             this.name = name;
             args = strings;

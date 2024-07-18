@@ -9,7 +9,7 @@ namespace Doublsb.Dialog
     {
         public string Identifier => "click";
 
-        public IEnumerator PerformAction(string context, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken)
+        public IEnumerator PerformAction(string context, ActorLines actorLines, CancellationToken fastForwardToken)
         {
             while (!Input.GetMouseButtonDown(0) && !fastForwardToken.IsCancellationRequested)
                 yield return null;

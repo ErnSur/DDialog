@@ -17,7 +17,7 @@ namespace Doublsb.Dialog
             _printCommandHandler = GetComponent<PrintCommandHandler>();
         }
 
-        public IEnumerator PerformAction(string context, DialogCommandSet dialogCommandSet,
+        public IEnumerator PerformAction(string context, ActorLines actorLines,
             CancellationToken fastForwardToken)
         {
               //  _printCommandHandler.FontSize = FontSize.ParseString(context);

@@ -4,6 +4,7 @@ namespace Doublsb.Dialog
 
     public interface ICommandFactory
     {
-        List<Command> GetCommands(CommandDefinition commandTree);
+        List<Command> GetCommands(CommandTag commandTree);
+        private bool TryGetCommand(string commandId, string arg1, out Command command)
     }
 }

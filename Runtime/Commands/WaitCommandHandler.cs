@@ -8,7 +8,7 @@ namespace Doublsb.Dialog
     {
         public string Identifier => "wait";
 
-        public IEnumerator PerformAction(string context, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken)
+        public IEnumerator PerformAction(string context, ActorLines actorLines, CancellationToken fastForwardToken)
         {
             if(fastForwardToken.IsCancellationRequested)
                 yield break;

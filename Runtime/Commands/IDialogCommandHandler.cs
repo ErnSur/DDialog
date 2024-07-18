@@ -7,12 +7,12 @@ namespace Doublsb.Dialog
     {
         string Identifier { get; }
         
-        IEnumerator PerformAction(string context, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken);
+        IEnumerator PerformAction(string context, ActorLines actorLines, CancellationToken fastForwardToken);
 
         /// <summary>
         /// Called when the dialog is finished.
         /// </summary>
-        IEnumerator CleanupAction(string context, DialogCommandSet dialogCommandSet)
+        IEnumerator CleanupAction(string context, ActorLines actorLines)
         {
             yield break;
         }

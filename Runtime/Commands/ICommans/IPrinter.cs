@@ -9,7 +9,11 @@ namespace Doublsb.Dialog
         public string Text { get; set; }
         public float Delay { get; set; }
 
+        /// <summary>
+        /// Reset state to default values
+        /// </summary>
+        public void Reset();
+        
         public void SetActive(bool active);
-
     }
 }

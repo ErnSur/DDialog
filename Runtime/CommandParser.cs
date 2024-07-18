@@ -1,7 +1,6 @@
 namespace Doublsb.Dialog
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
@@ -9,28 +8,26 @@ namespace Doublsb.Dialog
 
     internal static class CommandParser
     {
-        public static List<Command> Parse(string text, ICommandFactory commandFactory)
+        public static CommandTag Parse(string text)
         {
             try
             {
                 text = ReplaceShorthandXmlTags(text);
                 var xDoc = XDocument.Parse($"<root>{text}</root>");
-                var commandDef = XmlToCommandDefinition(xDoc.Root);
-                var commands = commandFactory.GetCommands(commandDef);
-                return commands;
+                return XmlToCommandDefinition(xDoc.Root);
             }
             catch (Exception e)
             {
                 Debug.LogError($"Error parsing dialog: {text}\n{e}");
             }
 
-            return new List<Command>();
+            return null;
         }
 
-        private static CommandDefinition XmlToCommandDefinition(XElement xmlRoot)
+        private static CommandTag XmlToCommandDefinition(XElement xmlRoot)
         {
             // Tag start callback
-            var root = new CommandDefinition
+            var root = new CommandTag
             {
                 name = xmlRoot.Name.LocalName,
                 args = xmlRoot.Attributes().Select(a => a.Value).ToArray()
@@ -41,7 +38,7 @@ namespace Doublsb.Dialog
                 switch (node)
                 {
                     case XText xText:
-                        root.children.Add(new CommandDefinition("print", xText.Value));
+                        root.children.Add(new CommandTag("print", xText.Value));
                         break;
                     case XElement xElement:
                         root.children.Add(XmlToCommandDefinition(xElement));

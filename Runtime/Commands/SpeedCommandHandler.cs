@@ -7,12 +7,12 @@ namespace Doublsb.Dialog
     using UnityEngine;
 
     [RequireComponent(typeof(PrintCommandHandler))]
-    [RequireComponent(typeof(DialogPrinter))]
+    [RequireComponent(typeof(DialogSystem))]
     public class SpeedCommandHandler : MonoBehaviour, IDialogCommandHandler
     {
         public float defaultDelay = 0.02f;
 
-        private DialogPrinter _dialogPrinter;
+        private DialogSystem _dialogSystem;
         private PrintCommandHandler _printCommandHandler;
 
         private float CurrentDelay
@@ -25,12 +25,12 @@ namespace Doublsb.Dialog
 
         private void Awake()
         {
-            _dialogPrinter = GetComponent<DialogPrinter>();
+            _dialogSystem = GetComponent<DialogSystem>();
             _printCommandHandler = GetComponent<PrintCommandHandler>();
-            _dialogPrinter.actorLineStarted.AddListener(OnActorLineStart);
+            _dialogSystem.actorLineStarted.AddListener(OnActorLineStart);
         }
 
-        IEnumerator IDialogCommandHandler.PerformAction(string context, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken)
+        IEnumerator IDialogCommandHandler.PerformAction(string context, ActorLines actorLines, CancellationToken fastForwardToken)
         {
             SetSpeed(context);
             yield break;

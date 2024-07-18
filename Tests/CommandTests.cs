@@ -22,12 +22,8 @@ namespace Tests
         {
             _printer = new TestPrinter();
             _commandFactory = new BasicCommandFactory(_printer);
-            _commands = CommandParser.Parse(_script, _commandFactory);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
+            var tagTree = CommandParser.Parse(_script);
+            _commands = _commandFactory.GetCommands(tagTree);
         }
 
         [Test]

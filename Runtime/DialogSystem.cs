@@ -11,17 +11,17 @@ namespace Doublsb.Dialog
     using UnityEngine.Events;
 
     [RequireComponent(typeof(ICommandFactory))]
-    public class DialogPrinter : MonoBehaviour
+    public class DialogSystem : MonoBehaviour
     {
         public UnityEvent<string> actorLineStarted;
         public UnityEvent<string> actorLineFinished;
-        public DialogCommandSet CurrentDialogCommandSet { get; private set; }
+        public ActorLines CurrentActorLines { get; private set; }
 
         private bool _initialized;
 
         private int? _selectedOptionIndex;
 
-        private IPrinter _dialogView;
+        private IPrinter _printer;
         private IDialogMenuView _dialogMenu;
         private State _state;
 
@@ -40,7 +40,7 @@ namespace Doublsb.Dialog
             if (_initialized)
                 return;
             _commandFactory = GetComponent<ICommandFactory>();
-            _dialogView = GetComponent<IPrinter>();
+            _printer = GetComponent<IPrinter>();
             _dialogMenu = GetComponent<IDialogMenuView>();
             _dialogMenu.OptionSelected += index =>
             {
@@ -59,21 +59,21 @@ namespace Doublsb.Dialog
             _fastForwardTokenSource = new CancellationTokenSource();
 
             OneTimeInitialize();
-            _dialogView.Text = string.Empty;
-            _dialogView.SetActive(true);
-            actorLineStarted.Invoke(CurrentDialogCommandSet.ActorId);
+            _printer.Reset();
+            _printer.SetActive(true);
+            actorLineStarted.Invoke(CurrentActorLines.ActorId);
         }
 
-        public void Run(DialogCommandSet commandSet)
+        public void Run(ActorLines commandSet)
         {
             _selectedOptionIndex = null;
-            CurrentDialogCommandSet = commandSet;
+            CurrentActorLines = commandSet;
             _cancelCommandChainTokenSource?.Dispose();
             _cancelCommandChainTokenSource = new CancellationTokenSource();
             RunCommandSet(_cancelCommandChainTokenSource.Token).Forget();
         }
 
-        public void Run(List<DialogCommandSet> data)
+        public void Run(List<ActorLines> data)
         {
             StartCoroutine(Activate_List(data));
         }
@@ -88,7 +88,7 @@ namespace Doublsb.Dialog
                     break;
 
                 case State.AwaitingClose:
-                    if (CurrentDialogCommandSet.SelectList.Count <= 0)
+                    if (CurrentActorLines.SelectList.Count <= 0)
                         Close();
                     break;
             }
@@ -105,27 +105,27 @@ namespace Doublsb.Dialog
 
             _currentCommands.Clear();
 
-            _dialogView.SetActive(false);
-            actorLineFinished.Invoke(CurrentDialogCommandSet.ActorId);
+            _printer.SetActive(false);
+            actorLineFinished.Invoke(CurrentActorLines.ActorId);
             StartCoroutine(_dialogMenu.Close());
 
             _state = State.Deactivate;
 
-            if (CurrentDialogCommandSet.Callback != null)
+            if (CurrentActorLines.Callback != null)
             {
-                CurrentDialogCommandSet.Callback.Invoke();
-                CurrentDialogCommandSet.Callback = null;
+                CurrentActorLines.Callback.Invoke();
+                CurrentActorLines.Callback = null;
             }
 
             if (_selectedOptionIndex.HasValue)
             {
-                var selectedOption = CurrentDialogCommandSet.SelectList[_selectedOptionIndex.Value];
+                var selectedOption = CurrentActorLines.SelectList[_selectedOptionIndex.Value];
                 selectedOption.Callback?.Invoke();
             }
         }
 
 
-        private IEnumerator Activate_List(List<DialogCommandSet> commandSets)
+        private IEnumerator Activate_List(List<ActorLines> commandSets)
         {
             _state = State.RunningCommands;
 
@@ -149,11 +149,9 @@ namespace Doublsb.Dialog
         {
             Setup();
             _state = State.RunningCommands;
-
-            // todo: optimize so that xml deserialization is not don in runtime but serialized
             
-            Debug.Log($"Parese: {CurrentDialogCommandSet.Script}");
-            _currentCommands = CommandParser.Parse(CurrentDialogCommandSet.Script, _commandFactory);
+            var tagTree = CommandParser.Parse(CurrentActorLines.Script);
+            _currentCommands = _commandFactory.GetCommands(tagTree);
             foreach (var command in _currentCommands)
             {
                 //Debug.Log("Running: " + command.GetType().Name);
@@ -165,7 +163,7 @@ namespace Doublsb.Dialog
 
         private void FastForwardCommands()
         {
-            if (CurrentDialogCommandSet.CanBeSkipped)
+            if (CurrentActorLines.CanBeSkipped)
                 _fastForwardTokenSource.Cancel();
         }
     }

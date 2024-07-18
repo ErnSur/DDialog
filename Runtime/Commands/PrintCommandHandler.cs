@@ -65,7 +65,7 @@ namespace Doublsb.Dialog
         public float Delay { get; set; }
         public Color Color { get; set; }
 
-        public IEnumerator PerformAction(string text, DialogCommandSet dialogCommandSet,
+        public IEnumerator PerformAction(string text, ActorLines actorLines,
             CancellationToken fastForwardToken)
         {
             yield return null;

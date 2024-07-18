@@ -16,7 +16,7 @@ namespace Doublsb.Dialog
             _printCommandHandler = GetComponent<PrintCommandHandler>();
         }
 
-        public IEnumerator PerformAction(string context, DialogCommandSet dialogCommandSet, CancellationToken fastForwardToken)
+        public IEnumerator PerformAction(string context, ActorLines actorLines, CancellationToken fastForwardToken)
         {
             if (ColorUtility.TryParseHtmlString(context, out var color))
             {
