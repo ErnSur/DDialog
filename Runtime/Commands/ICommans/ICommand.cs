@@ -10,7 +10,7 @@ namespace Doublsb.Dialog
         ICommand Root { get; set; }
         ICommand Parent { get; set; }
         List<ICommand> Children { get; set; }
-        
+
         /// <summary>
         /// Returns a collection of the descendant ICommands for this command
         /// </summary>
@@ -19,8 +19,8 @@ namespace Doublsb.Dialog
             foreach (var child in Children)
             {
                 yield return child;
-                foreach (var descendant in child.Descendants())
-                    yield return descendant;
+                foreach (var grandChild in child.Descendants())
+                    yield return grandChild;
             }
         }
 
@@ -30,11 +30,12 @@ namespace Doublsb.Dialog
         public async UniTask Act(CancellationToken cancellationToken)
         {
             await Begin(cancellationToken);
-            foreach (var descendant in Descendants())
-                await descendant.Act(cancellationToken);
-            await End(cancellationToken);
+            foreach (var child in Children)
+                await child.Act(cancellationToken);
+            if (Children.Count > 0)
+                await End(cancellationToken);
         }
-        
+
         /// <summary>
         /// Called on opening tag
         /// </summary>
@@ -44,7 +45,7 @@ namespace Doublsb.Dialog
         /// Called on closing tag if node had any children
         /// </summary>
         protected UniTask End(CancellationToken cancellationToken) => UniTask.CompletedTask;
-        
+
         IEnumerator<ICommand> IEnumerable<ICommand>.GetEnumerator()
         {
             return Descendants().GetEnumerator();

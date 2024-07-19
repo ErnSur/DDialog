@@ -16,6 +16,7 @@ namespace Doublsb.Dialog
         private AudioSource audioSource;
 
         private BasicActorManager _actorManager;
+        private string _lastActorId;
 
         private void Awake()
         {
@@ -23,7 +24,7 @@ namespace Doublsb.Dialog
             _actorManager = GetComponent<BasicActorManager>();
         }
 
-        bool ICommandFactory.TryGetCommand(string commandId, string[] args, ICommand parent, out ICommand command)
+        bool ICommandFactory.TryGetCommand(string commandId, string[] args,  out ICommand command)
         {
             var arg1 = args.FirstOrDefault();
             switch (commandId)
@@ -31,6 +32,7 @@ namespace Doublsb.Dialog
                 case "actor":
                     // make it write to actor  manager
                     command = new ActorCommand(_actorManager, arg1);
+                    _lastActorId = arg1;
                     return true;
                 case "print":
                     command = new PrintCommand(_printer, arg1);
@@ -51,18 +53,17 @@ namespace Doublsb.Dialog
                     command = new SoundCommand(clip, audioSource);
                     return true;
                 case "emote":
-                    if (parent.Root is ActorCommand actor)
-                    {
-                        command = new FuncCommand(() => _actorManager.Emote(actor.ActorId, arg1));
+                        command = new FuncCommand(() => _actorManager.Emote(_lastActorId, arg1));
                         return true;
-                    }
-                    command = null;
-                    return false;
                 case "click":
                     command = new FuncCommand(async ct =>
                     {
-                        while (!Input.GetMouseButtonDown(0) && !ct.IsCancellationRequested)
+                        while (true)
+                        {
                             await UniTask.NextFrame(ct);
+                            if (Input.GetMouseButtonDown(0) || ct.IsCancellationRequested)
+                                break;
+                        }
                     });
                     return true;
                 default:

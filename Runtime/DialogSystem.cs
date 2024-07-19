@@ -79,6 +79,7 @@ namespace Doublsb.Dialog
             StartCoroutine(Activate_List(data));
         }
 
+        // TODO: Cancellation token needs to only cancel the current command, not the whole chain
         [UsedImplicitly]
         public void SkipOrClose()
         {
@@ -152,9 +153,7 @@ namespace Doublsb.Dialog
             _state = State.RunningCommands;
 
             _rootCommand = CommandParser.ParseCommands(CurrentActorLines.Script,CurrentActorLines.ActorId, _commandFactory);
-            
-            foreach (var command in _rootCommand)
-                await command.Act(_fastForwardTokenSource.Token);
+            await _rootCommand.Act(_fastForwardTokenSource.Token);
 
             _state = State.AwaitingClose;
         }

@@ -6,12 +6,7 @@ namespace Doublsb.Dialog
     {
         ICommand CreateCommandTree(CommandTag rootTag)
         {
-            return CreateCommandTree(rootTag, null);
-        }
-        
-        private ICommand CreateCommandTree(CommandTag rootTag, ICommand parent)
-        {
-            if(!TryGetCommand(rootTag.name, rootTag.args, parent, out var root))
+            if(!TryGetCommand(rootTag.name, rootTag.args, out var root))
                 return null;
 
             root.Children = new List<ICommand>();
@@ -27,6 +22,6 @@ namespace Doublsb.Dialog
             return root;
         }
 
-        protected bool TryGetCommand(string commandId, string[] args, ICommand parent, out ICommand command);
+        protected bool TryGetCommand(string commandId, string[] args,  out ICommand command);
     }
 }

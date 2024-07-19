@@ -16,13 +16,14 @@ namespace Doublsb.Dialog
         [SerializeField]
         private TMP_Text textComponent;
 
+        [field: SerializeField]
+        public float Delay { get; set; } = 0.02f;
+
         [SerializeField]
         private Color textColor = Color.white;
 
         [SerializeField]
         private FontSize textSize;
-
-        public float Delay { get; set; } = 0.02f;
 
         public FontSize TextSize
         {
@@ -50,7 +51,7 @@ namespace Doublsb.Dialog
             set => textComponent.text = value;
         }
 
-        
+
         public async UniTask Print(string text, CancellationToken cancellationToken)
         {
             for (int i = 0; i < text.Length; i++)

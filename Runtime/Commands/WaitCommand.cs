@@ -10,11 +10,11 @@ namespace Doublsb.Dialog
 
         public WaitCommand(string waitTime)
         {
-            float.TryParse(waitTime,
-                System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out _waitTime);
-            Debug.LogError($"Cannot parse float number: {waitTime}");
+            if (!float.TryParse(waitTime,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out _waitTime))
+                Debug.LogError($"Cannot parse float number: {waitTime}");
         }
 
         async UniTask ICommand.Begin(CancellationToken cancellationToken)
