@@ -15,12 +15,12 @@ namespace Doublsb.Dialog
         [SerializeField]
         private AudioSource audioSource;
 
-        private DefaultActorManager _actorManager;
+        private BasicActorManager _actorManager;
 
         private void Awake()
         {
             _printer = GetComponent<IPrinter>();
-            _actorManager = GetComponent<DefaultActorManager>();
+            _actorManager = GetComponent<BasicActorManager>();
         }
 
         bool ICommandFactory.TryGetCommand(string commandId, string[] args, ICommand parent, out ICommand command)

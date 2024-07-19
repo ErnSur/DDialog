@@ -6,9 +6,9 @@ namespace Doublsb.Dialog
     public class ActorCommand : Command, ICommand
     {
         public string ActorId { get; }
-        private readonly DefaultActorManager _actorManager;
+        private readonly BasicActorManager _actorManager;
 
-        public ActorCommand(DefaultActorManager actorManager, string actorId)
+        public ActorCommand(BasicActorManager actorManager, string actorId)
         {
             _actorManager = actorManager;
             ActorId = actorId;

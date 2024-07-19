@@ -4,7 +4,7 @@ namespace Doublsb.Dialog
     using UnityEngine.UI;
 
     [RequireComponent(typeof(DialogSystem))]
-    public class DefaultActorManager : MonoBehaviour, ISoundEffectProvider
+    public class BasicActorManager : MonoBehaviour, ISoundEffectProvider
     {
         [SerializeField]
         private GameObject characters;

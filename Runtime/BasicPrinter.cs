@@ -1,27 +1,29 @@
 namespace Doublsb.Dialog
 {
     using System;
-    using System.Text;
+    using System.Threading;
+    using Cysharp.Threading.Tasks;
     using TMPro;
     using UnityEngine;
 
     internal class BasicPrinter : MonoBehaviour, IPrinter
     {
         public event Action TextPrinted;
+
         [SerializeField]
         private GameObject textWindow;
-        
+
         [SerializeField]
         private TMP_Text textComponent;
 
         [SerializeField]
-        private Color textColor;
+        private Color textColor = Color.white;
 
         [SerializeField]
         private FontSize textSize;
 
         public float Delay { get; set; } = 0.02f;
-        
+
         public FontSize TextSize
         {
             get => textSize;
@@ -42,12 +44,24 @@ namespace Doublsb.Dialog
             }
         }
 
-        public StringBuilder Text { get; set; } = new StringBuilder();
-
-        public void Print()
+        public string Text
         {
-            textComponent.text = Text.ToString();
-            TextPrinted?.Invoke();
+            get => textComponent.text;
+            set => textComponent.text = value;
+        }
+
+        
+        public async UniTask Print(string text, CancellationToken cancellationToken)
+        {
+            for (int i = 0; i < text.Length; i++)
+            {
+                var character = text[i];
+                Text += character;
+                TextPrinted?.Invoke();
+
+                if (!cancellationToken.IsCancellationRequested && Delay != 0)
+                    await UniTask.WaitForSeconds(Delay, false, PlayerLoopTiming.Update);
+            }
         }
 
         public void Reset()
@@ -55,8 +69,7 @@ namespace Doublsb.Dialog
             TextSize = 60;
             TextColor = Color.white;
             Delay = 0.02f;
-            Text.Clear();
-            textComponent.text = "";
+            Text = "";
         }
 
         public void SetActive(bool active)
