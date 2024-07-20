@@ -1,7 +1,6 @@
 namespace Doublsb.Dialog
 {
     using UnityEngine;
-    using UnityEngine.Serialization;
 
     public class SoundCommandsHandler : MonoBehaviour
     {
