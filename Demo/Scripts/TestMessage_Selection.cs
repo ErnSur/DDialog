@@ -6,7 +6,7 @@ using Doublsb.Dialog;
 
 public class TestMessage_Selection : MonoBehaviour
 {
-    public DialogSystem dialogSystem;
+    //public DialogSystem dialogSystem;
 
     private void Awake()
     {
@@ -19,7 +19,7 @@ public class TestMessage_Selection : MonoBehaviour
         
         dialogTexts.Add(Text1);
 
-        dialogSystem.Run(dialogTexts).Forget();
+        //dialogSystem.Run(dialogTexts).Forget();
     }
 
     private void OnOtherOption()
@@ -28,7 +28,7 @@ public class TestMessage_Selection : MonoBehaviour
 
         dialogTexts.Add(new ActorLines("Right. You don't have to get the answer."));
 
-        dialogSystem.Run(dialogTexts).Forget();
+        //dialogSystem.Run(dialogTexts).Forget();
     }
 
     private void OnWrongOption()
@@ -37,7 +37,7 @@ public class TestMessage_Selection : MonoBehaviour
 
         dialogTexts.Add(new ActorLines("You are wrong."));
 
-        dialogSystem.Run(dialogTexts);
+        //dialogSystem.Run(dialogTexts);
     }
 
     private void OnCorrectOption()
@@ -46,6 +46,6 @@ public class TestMessage_Selection : MonoBehaviour
 
         dialogTexts.Add(new ActorLines("You are right."));
 
-        dialogSystem.Run(dialogTexts);
+        //dialogSystem.Run(dialogTexts);
     }
 }

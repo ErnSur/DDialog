@@ -716,7 +716,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4094011683184477047, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_BlockingMask.m_Bits
-      value: 4294967295
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: 4094011683457312917, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_IsActive
@@ -765,7 +765,7 @@ PrefabInstance:
     - target: {fileID: 5059723703542122742, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 325689816}
+      objectReference: {fileID: 0}
     - target: {fileID: 5059723703542122742, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -854,6 +854,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 325689822}
+    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: sounds.list.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: sounds.list.Array.data[0].key
+      value: haha
+      objectReference: {fileID: 0}
+    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: sounds.list.Array.data[0].value
+      value: 
+      objectReference: {fileID: 8300000, guid: 7796b54b22f7f02439fc159ff0ec2b7c, type: 3}
     - target: {fileID: 8870563986960605807, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -903,18 +919,23 @@ PrefabInstance:
   m_SourcePrefab: {fileID: 100100000, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
 --- !u!114 &325689816 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4094011683184477041, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+  m_CorrespondingSourceObject: {fileID: 8737939875401861572, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
   m_PrefabInstance: {fileID: 325689815}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07f3da1b4b00cd542a74d707c719f823, type: 3}
+  m_Script: {fileID: 11500000, guid: 2c5686e207344301bd833eb6cebc3d52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!224 &325689817 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4094011683457312916, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+  m_PrefabInstance: {fileID: 325689815}
+  m_PrefabAsset: {fileID: 0}
+--- !u!82 &325689822 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 4094011683184477040, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
   m_PrefabInstance: {fileID: 325689815}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &343883589

@@ -9,6 +9,21 @@ namespace Doublsb.Dialog
 
     public delegate UniTask CommandCallback(string[] args, CancellationToken cancellationToken);
 
+    public struct CommandCallbackOptions
+    {
+        // TODO: `BeginAfter` and `EndAfter` methods
+        // public static CommandCallbackOptions BeginBefore(Type type) => new CommandCallbackOptions
+        // {
+        // };
+        public float BeginIndex { get; set; }
+        public float EndIndex { get; set; }
+        public CommandCallbackOptions(float beginIndex = 0, float endIndex = 0)
+        {
+            BeginIndex = beginIndex;
+            EndIndex = endIndex;
+        }
+    }
+    
     public class CommandRunner
     {
         private readonly Dictionary<string, CommandData> _commandCallbacks = new();
@@ -17,9 +32,9 @@ namespace Doublsb.Dialog
         /// <param name="commandName"> The name of the command to register the callback for. </param>
         /// <param name="beginCallback"> The callback to be executed when the command is encountered. </param>
         /// <param name="endCallback"> The callback to be executed when the command is finished. </param>
-        /// <param name="index"> The index of the callback in the callback list. The lower the index, the earlier the callback will be executed. </param>
+        /// <param name="options"> The options for the callback. </param>
         public void RegisterCommandCallback([NotNull] string commandName, [CanBeNull] CommandCallback beginCallback,
-            [CanBeNull] CommandCallback endCallback = null, float index = 0)
+            [CanBeNull] CommandCallback endCallback = null, CommandCallbackOptions options = default)
         {
             if (!_commandCallbacks.TryGetValue(commandName, out var commandData))
             {
@@ -29,13 +44,17 @@ namespace Doublsb.Dialog
             if (beginCallback != null)
             {
                 // Insert the callback at the specified index
-                commandData.BeginCallbacks.Insert((int) index, beginCallback);
+                // Adjust the index to be within the bounds of the list
+                var newIndex = Mathf.Clamp((int) options.BeginIndex, 0, commandData.BeginCallbacks.Count);
+                commandData.BeginCallbacks.Insert(newIndex, beginCallback);
             }
 
             if (endCallback != null)
             {
                 // Insert the callback at the specified index
-                commandData.EndCallback.Insert((int) index, endCallback);
+                // Adjust the index to be within the bounds of the list
+                var newIndex = Mathf.Clamp((int) options.EndIndex, 0, commandData.EndCallback.Count);
+                commandData.EndCallback.Insert(newIndex, endCallback);
             }
         }
 

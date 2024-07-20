@@ -6,7 +6,7 @@ using Doublsb.Dialog;
 
 public class TestMessage : MonoBehaviour
 {
-    public DialogSystem dialogSystem;
+    public CommandRunnerComponent dialogSystem;
 
     public GameObject[] Example;
     
@@ -33,7 +33,16 @@ public class TestMessage : MonoBehaviour
 
         dialogTexts.Add(new ActorLines("That's it! Please check the documents. Good luck to you.", "Sa"));
 
-        dialogSystem.Run(dialogTexts).Forget();
+        Execute(dialogTexts).Forget();
+    }
+
+    private async UniTaskVoid Execute(List<ActorLines> dialogTexts)
+    {
+        foreach (var dialogText in dialogTexts)
+        {
+            var script = $"<actor={dialogText.ActorId}>{dialogText.Script}</actor>";
+            await dialogSystem.CommandRunner.Execute(script, destroyCancellationToken);
+        }
     }
 
     private void Show_Example(int index)

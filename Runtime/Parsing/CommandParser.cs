@@ -8,13 +8,6 @@ namespace Doublsb.Dialog
 
     internal static class CommandParser
     {
-        public static ICommand ParseCommands(string text, string actorId, ICommandFactory commandFactory)
-        {
-            var commandTree = Parse(text);
-            commandTree.args = new[] { actorId };
-            return commandFactory.CreateCommandTree(commandTree);
-        }
-
         public static CommandTag Parse(string text)
         {
             try

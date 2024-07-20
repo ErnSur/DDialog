@@ -39,7 +39,7 @@ namespace Doublsb.Dialog
                 async (args, token) =>
                 {
                     ActorManager.ActiveActorId = null;
-                },2);
+                },new CommandCallbackOptions(0, 10));
         }
     }
 }

@@ -42,7 +42,7 @@ namespace Doublsb.Dialog
                     await UniTask.WaitUntilCanceled(skipCts.Token);
                     Printer.SetActive(false);
                     Printer.Reset();
-                },3);
+                });
         }
 
         protected virtual void RegisterClick()
