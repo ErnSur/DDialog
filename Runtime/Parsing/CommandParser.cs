@@ -15,12 +15,12 @@ namespace Doublsb.Dialog
             return commandFactory.CreateCommandTree(commandTree);
         }
 
-        private static CommandTag Parse(string text)
+        public static CommandTag Parse(string text)
         {
             try
             {
                 text = ReplaceShorthandXmlTags(text);
-                var xDoc = XDocument.Parse($"<actor>{text}</actor>");
+                var xDoc = XDocument.Parse($"<root>{text}</root>");
                 return XmlToCommandDefinition(xDoc.Root);
             }
             catch (Exception e)

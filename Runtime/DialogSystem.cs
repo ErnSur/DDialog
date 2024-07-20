@@ -9,10 +9,9 @@ namespace Doublsb.Dialog
     using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
 
-
     public class CommandSystemPoC
     {
-        private static CommandRunner _commandRunner = new CommandRunner();
+        private static readonly CommandRunner CommandRunner = new CommandRunner();
         private void Init()
         {
             UserCode_RegisterActorCommand();
@@ -22,40 +21,14 @@ namespace Doublsb.Dialog
         {
             var previousValue = 0;
             var value = 5;
-            var newValue = 10;
-            _commandRunner.RegisterCommandCallback("actor", async token =>
+            CommandRunner.RegisterCommandCallback("actor", async (args,token) =>
             {
                 previousValue = value;
-                value = newValue;
-            }, async token =>
+                value = int.Parse(args[0]);
+            }, async (args,token) =>
             {
                 value = previousValue;
             });
-        }
-    }
-
-    public class CommandRunner
-    {
-        private Func<CancellationToken, UniTask> callbacks;
-        public void RegisterBeginCallback(string commandName, Func<CancellationToken, UniTask> callback, float priority = 0)
-        {
-        }
-        
-        public void RegisterCommandCallback(string commandName, Func<CancellationToken, UniTask> beginCallback, Func<CancellationToken, UniTask> endCallback, float priority = 0)
-        {
-        }
-
-        public async UniTask Execute(string script, CancellationToken cancellationToken = default)
-        {
-            // TODO: set actor ID in the `WriteSo` method to the actor tag
-            var commandTree = CommandParser.ParseCommands(script, _, _);
-            await callbacks.Invoke(cancellationToken);
-            await commandTree.Act(cancellationToken);
-        }
-
-        public void GoTo(string commandLabel)
-        {
-            // TODO: implement. This method should be used to jump to a specific command in the execution tree. i.e., go to label in renpy
         }
     }
 
