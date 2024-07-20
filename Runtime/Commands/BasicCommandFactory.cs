@@ -16,7 +16,6 @@ namespace Doublsb.Dialog
         private AudioSource audioSource;
 
         private BasicActorManager _actorManager;
-        private string _lastActorId;
 
         private void Awake()
         {
@@ -31,8 +30,7 @@ namespace Doublsb.Dialog
             {
                 case "actor":
                     // make it write to actor  manager
-                    command = new ActorCommand(_actorManager, arg1);
-                    _lastActorId = arg1;
+                    command = new ActorCommand(_printer,_actorManager, arg1);
                     return true;
                 case "print":
                     command = new PrintCommand(_printer, arg1);
@@ -53,7 +51,7 @@ namespace Doublsb.Dialog
                     command = new SoundCommand(clip, audioSource);
                     return true;
                 case "emote":
-                        command = new FuncCommand(() => _actorManager.Emote(_lastActorId, arg1));
+                        command = new FuncCommand(() => _actorManager.Emote(_actorManager.CurrentActorId, arg1));
                         return true;
                 case "click":
                     command = new FuncCommand(async ct =>
@@ -61,7 +59,7 @@ namespace Doublsb.Dialog
                         while (true)
                         {
                             await UniTask.NextFrame(ct);
-                            if (Input.GetMouseButtonDown(0) || ct.IsCancellationRequested)
+                            if (Input.GetMouseButtonUp(0))
                                 break;
                         }
                     });

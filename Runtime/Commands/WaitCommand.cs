@@ -1,5 +1,6 @@
 namespace Doublsb.Dialog
 {
+    using System;
     using System.Threading;
     using Cysharp.Threading.Tasks;
     using UnityEngine;
@@ -21,7 +22,16 @@ namespace Doublsb.Dialog
         {
             if (cancellationToken.IsCancellationRequested)
                 return;
-            await UniTask.WaitForSeconds(_waitTime, false, PlayerLoopTiming.Update, cancellationToken);
+            //try
+            //{
+                Debug.Log($"Wait Thread: {Thread.CurrentThread.ManagedThreadId} / {cancellationToken.IsCancellationRequested}");
+                await UniTask.WaitForSeconds(1, false, PlayerLoopTiming.Update, cancellationToken);
+                Debug.Log($"Wait finished: {Thread.CurrentThread.ManagedThreadId}");
+            // }
+            // catch (Exception e)
+            // {
+                // Debug.LogError(e);
+            // }
         }
     }
 }

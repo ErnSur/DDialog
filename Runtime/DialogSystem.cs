@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Doublsb.Dialog
@@ -9,25 +8,26 @@ namespace Doublsb.Dialog
     using System.Threading;
     using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
-    using UnityEngine.Events;
+
+
+    public class CommandRunner
+    {
+        public event Action CommandFinished;
+
+        public async UniTask Execute(ICommand command, CancellationToken cancellationToken = default)
+        {
+            await command.Act(cancellationToken);
+            CommandFinished?.Invoke();
+        }
+    }
 
     [RequireComponent(typeof(ICommandFactory))]
     public class DialogSystem : MonoBehaviour
     {
-        public UnityEvent<string> actorLineStarted;
-        public UnityEvent<string> actorLineFinished;
-        public ActorLines CurrentActorLines { get; private set; }
-
+        private ActorLines _currentActorLines;
         private bool _initialized;
-
-        private int? _selectedOptionIndex;
-
-        private IPrinter _printer;
-        private IDialogMenuView _dialogMenu;
         private State _state;
-
-        private CancellationTokenSource _fastForwardTokenSource;
-        private CancellationTokenSource _cancelCommandChainTokenSource;
+        private CancellationTokenSource _fastForwardTokenSource = new();
         private ICommandFactory _commandFactory;
         private ICommand _rootCommand;
 
@@ -41,13 +41,6 @@ namespace Doublsb.Dialog
             if (_initialized)
                 return;
             _commandFactory = GetComponent<ICommandFactory>();
-            _printer = GetComponent<IPrinter>();
-            _dialogMenu = GetComponent<IDialogMenuView>();
-            _dialogMenu.OptionSelected += index =>
-            {
-                _selectedOptionIndex = index;
-                Close();
-            };
             _initialized = true;
         }
 
@@ -56,49 +49,34 @@ namespace Doublsb.Dialog
         /// </summary>
         private void Setup()
         {
-            _fastForwardTokenSource?.Dispose();
-            _fastForwardTokenSource = new CancellationTokenSource();
-
             OneTimeInitialize();
-            _printer.Reset();
-            _printer.SetActive(true);
-            actorLineStarted.Invoke(CurrentActorLines.ActorId);
         }
 
-        public void Run(ActorLines commandSet)
+        private async UniTask Run(ActorLines commandSet)
         {
-            _selectedOptionIndex = null;
-            CurrentActorLines = commandSet;
-            _cancelCommandChainTokenSource?.Dispose();
-            _cancelCommandChainTokenSource = new CancellationTokenSource();
-            RunCommandSet(_cancelCommandChainTokenSource.Token).Forget();
+            _currentActorLines = commandSet;
+            await RunCommandSet();
         }
 
         public void Run(List<ActorLines> data)
         {
-            StartCoroutine(Activate_List(data));
+            Activate_List(data).Forget();
         }
 
-        // TODO: Cancellation token needs to only cancel the current command, not the whole chain
         [UsedImplicitly]
         public void SkipOrClose()
         {
             switch (_state)
             {
-                case State.RunningCommands:
-                    FastForwardCommands();
-                    break;
-
                 case State.AwaitingClose:
-                    if (CurrentActorLines.SelectList.Count <= 0)
-                        Close();
+                    Close();
                     break;
             }
         }
 
         public void Close()
         {
-            _cancelCommandChainTokenSource?.Cancel();
+            _fastForwardTokenSource?.Cancel();
 
             foreach (var command in _rootCommand.OfType<IDisposable>())
             {
@@ -107,62 +85,55 @@ namespace Doublsb.Dialog
 
             _rootCommand = null;
 
-            _printer.SetActive(false);
-            actorLineFinished.Invoke(CurrentActorLines.ActorId);
-            StartCoroutine(_dialogMenu.Close());
-
             _state = State.Deactivate;
 
-            if (CurrentActorLines.Callback != null)
-            {
-                CurrentActorLines.Callback.Invoke();
-                CurrentActorLines.Callback = null;
-            }
-
-            if (_selectedOptionIndex.HasValue)
-            {
-                var selectedOption = CurrentActorLines.SelectList[_selectedOptionIndex.Value];
-                selectedOption.Callback?.Invoke();
-            }
+            _currentActorLines.Callback?.Invoke();
         }
 
 
-        private IEnumerator Activate_List(List<ActorLines> commandSets)
+        private async UniTask Activate_List(List<ActorLines> commandSets)
         {
             _state = State.RunningCommands;
 
             foreach (var commandSet in commandSets)
             {
-                Run(commandSet);
-                if (commandSet.SelectList.Count > 0)
-                {
-                    var textOptions = commandSet.SelectList.Select(x => x.Text).ToArray();
-                    StartCoroutine(_dialogMenu.Open(textOptions));
-                }
-
-                while (_state != State.Deactivate)
-                {
-                    yield return null;
-                }
+                await Run(commandSet);
             }
         }
 
-        private async UniTask RunCommandSet(CancellationToken cancellationToken)
+        private async UniTask RunCommandSet()
         {
             Setup();
             _state = State.RunningCommands;
 
-            _rootCommand = CommandParser.ParseCommands(CurrentActorLines.Script,CurrentActorLines.ActorId, _commandFactory);
-            await _rootCommand.Act(_fastForwardTokenSource.Token);
+            _rootCommand =
+                CommandParser.ParseCommands(_currentActorLines.Script, _currentActorLines.ActorId, _commandFactory);
+            foreach (var call in _rootCommand.GetExecutionCalls())
+            {
+                var token = _fastForwardTokenSource.Token;
+                if (token.IsCancellationRequested)
+                {
+                    _fastForwardTokenSource?.Dispose();
+                    _fastForwardTokenSource = new CancellationTokenSource();
+                    token = _fastForwardTokenSource.Token;
+                }
 
+                try
+                {
+                    // TODO: cancelation token should be used for real cancellation, like destroying the GameObject and stuff
+                    // TODO: clicking on chat should not automatically cancel cancellation token, instead the command should receive information that the chat was clicked, possibly from context object / or just from the custom game context
+                    var destroyToken = this.GetCancellationTokenOnDestroy();
+                    using var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(token, destroyToken);
+                    await call(linkedToken.Token);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Command failed:{e}");
+                }
+            }
+
+            Debug.Log("Command chain finished");
             _state = State.AwaitingClose;
         }
-
-        private void FastForwardCommands()
-        {
-            if (CurrentActorLines.CanBeSkipped)
-                _fastForwardTokenSource.Cancel();
-        }
-        
     }
 }

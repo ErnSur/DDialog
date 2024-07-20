@@ -1,9 +1,11 @@
 namespace Doublsb.Dialog
 {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Threading;
     using Cysharp.Threading.Tasks;
+    using UnityEngine;
 
     public interface ICommand : IEnumerable<ICommand>
     {
@@ -24,16 +26,44 @@ namespace Doublsb.Dialog
             }
         }
 
+        public IEnumerable<Func<CancellationToken, UniTask>> GetExecutionCalls()
+        {
+            yield return Begin;
+            foreach (var child in Children)
+            foreach (var call in child.GetExecutionCalls())
+                yield return call;
+            if (Children.Count > 0)
+                yield return End;
+        }
+
         /// <summary>
         /// Called on opening tag and second time if node had any children
         /// </summary>
         public async UniTask Act(CancellationToken cancellationToken)
         {
-            await Begin(cancellationToken);
+            try
+            {
+                await Begin(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+        
             foreach (var child in Children)
                 await child.Act(cancellationToken);
-            if (Children.Count > 0)
-                await End(cancellationToken);
+        
+            try
+            {
+                if (Children.Count > 0)
+                {
+                    await End(cancellationToken);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
 
         /// <summary>

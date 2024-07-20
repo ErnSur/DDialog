@@ -1,14 +1,14 @@
 namespace Doublsb.Dialog
 {
-    using System.Collections.Generic;
+    using System;
     using UnityEngine.Events;
+    using System.Collections.Generic;
 
     public class ActorLines
     {
         public readonly string Script;
         public readonly string ActorId;
         public readonly bool CanBeSkipped;
-        public readonly List<MenuOption> SelectList = new List<MenuOption>();
         public UnityAction Callback;
 
         public ActorLines(string script, string actorId = "", UnityAction callback = null, bool canBeSkipped = true)
@@ -18,5 +18,8 @@ namespace Doublsb.Dialog
             CanBeSkipped = canBeSkipped;
             Callback = callback;
         }
+
+        [Obsolete("Create Menu selection as a cusom command")]
+        public List<MenuOption> SelectList { get; set; } = new List<MenuOption>();
     }
 }

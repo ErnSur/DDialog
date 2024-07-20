@@ -12,23 +12,8 @@ namespace Doublsb.Dialog
         [SerializeField]
         private string defaultEmotionId = "Normal";
 
-        private DialogSystem _dialogSystem;
-
-        private void Awake()
-        {
-            _dialogSystem = GetComponent<DialogSystem>();
-            _dialogSystem.actorLineStarted.AddListener(Show);
-            _dialogSystem.actorLineFinished.AddListener(OnActorLineFinished);
-        }
+        public string CurrentActorId { get; private set; }
         
-        private void OnDestroy()
-        {
-            _dialogSystem.actorLineStarted.RemoveListener(Show);
-            _dialogSystem.actorLineFinished.RemoveListener(OnActorLineFinished);
-        }
-
-        private void OnActorLineFinished(string _) => HideAll();
-
         public bool TryGetChatSoundEffects(string actorId, out AudioClip[] clips)
         {
             if (TryGetActor(actorId, out var actor) && actor.ChatSE is { Length: > 0 })
@@ -99,6 +84,18 @@ namespace Doublsb.Dialog
                 actor.GetComponent<Image>().sprite = sprite;
             else
                 Debug.LogError($"Emotion not found: {emotion} for {actorId}");
+        }
+
+        public void StartActorLine(string actorId)
+        {
+            Show(actorId);
+            CurrentActorId = actorId;
+        }
+
+        public void EndActorLine()
+        {
+            HideAll();
+            CurrentActorId = null;
         }
     }
 }
