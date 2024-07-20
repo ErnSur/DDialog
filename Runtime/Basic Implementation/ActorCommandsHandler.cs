@@ -1,0 +1,45 @@
+namespace Doublsb.Dialog
+{
+    using System.Linq;
+    using UnityEngine;
+
+    [RequireComponent(typeof(ICommandRunnerProvider))]
+    public class ActorCommandsHandler : MonoBehaviour
+    {
+        protected IActorManager ActorManager;
+        protected CommandRunner CommandRunner;
+
+        protected virtual void Awake()
+        {
+            ActorManager = GetComponent<IActorManager>();
+            CommandRunner = GetComponent<ICommandRunnerProvider>().CommandRunner;
+            RegisterCommands();
+        }
+
+        protected virtual void RegisterCommands()
+        {
+            RegisterActor();
+            RegisterEmote();
+        }
+
+        protected virtual void RegisterEmote()
+        {
+            CommandRunner.RegisterCommandCallback("emote", async (args, token) =>
+            {
+                ActorManager.Emote(ActorManager.ActiveActorId, args.FirstOrDefault());
+            });
+        }
+
+        protected virtual void RegisterActor()
+        {
+            CommandRunner.RegisterCommandCallback("actor", async (args, token) =>
+                {
+                    ActorManager.ActiveActorId = args.FirstOrDefault();
+                },
+                async (args, token) =>
+                {
+                    ActorManager.ActiveActorId = null;
+                },2);
+        }
+    }
+}

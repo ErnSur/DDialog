@@ -19,7 +19,7 @@ namespace Doublsb.Dialog
         /// <param name="endCallback"> The callback to be executed when the command is finished. </param>
         /// <param name="index"> The index of the callback in the callback list. The lower the index, the earlier the callback will be executed. </param>
         public void RegisterCommandCallback([NotNull] string commandName, [CanBeNull] CommandCallback beginCallback,
-            [CanBeNull] CommandCallback endCallback, float index = 0)
+            [CanBeNull] CommandCallback endCallback = null, float index = 0)
         {
             if (!_commandCallbacks.TryGetValue(commandName, out var commandData))
             {

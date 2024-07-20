@@ -52,7 +52,6 @@ namespace Doublsb.Dialog
             set => textComponent.text = value;
         }
 
-
         public static CancellationTokenSource CreateSkipCts(CancellationToken cancellationToken, [CallerMemberName]string callerMemberName = "")
         {
             var source = new CancellationTokenSource();
@@ -111,6 +110,15 @@ namespace Doublsb.Dialog
         public void SetActive(bool active)
         {
             textWindow.SetActive(active);
+        }
+    }
+
+    public class BasicPrinterCommandHandler : MonoBehaviour
+    {
+        private void Awake()
+        {
+            var printer = GetComponent<IPrinter>();
+            var commandRunner = GetComponent<ICommandRunnerProvider>();
         }
     }
 }

@@ -8,6 +8,17 @@ namespace Doublsb.Dialog
     using System.Threading;
     using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
+    using UnityEngine.Events;
+
+    public interface ICommandRunnerProvider
+    {
+        CommandRunner CommandRunner { get; }
+    }
+    
+    public class CommandRunnerComponent : MonoBehaviour, ICommandRunnerProvider
+    {
+        public CommandRunner CommandRunner { get; } = new CommandRunner();
+    }
 
     public class CommandSystemPoC
     {
