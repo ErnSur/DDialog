@@ -2,7 +2,8 @@
     "name": "DDialog.Demo",
     "rootNamespace": "",
     "references": [
-        "GUID:8f031fd9a728e4818ab3f407fe9ecbca"
+        "GUID:8f031fd9a728e4818ab3f407fe9ecbca",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

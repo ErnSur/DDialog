@@ -22,16 +22,9 @@ namespace Doublsb.Dialog
         {
             if (cancellationToken.IsCancellationRequested)
                 return;
-            //try
-            //{
-                Debug.Log($"Wait Thread: {Thread.CurrentThread.ManagedThreadId} / {cancellationToken.IsCancellationRequested}");
-                await UniTask.WaitForSeconds(1, false, PlayerLoopTiming.Update, cancellationToken);
-                Debug.Log($"Wait finished: {Thread.CurrentThread.ManagedThreadId}");
-            // }
-            // catch (Exception e)
-            // {
-                // Debug.LogError(e);
-            // }
+ 
+            using var skipCts = BasicPrinter.CreateSkipCts(cancellationToken);
+            await UniTask.Delay(TimeSpan.FromSeconds(_waitTime), cancellationToken: skipCts.Token);
         }
     }
 }

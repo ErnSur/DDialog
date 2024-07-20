@@ -58,9 +58,9 @@ namespace Doublsb.Dialog
             await RunCommandSet();
         }
 
-        public void Run(List<ActorLines> data)
+        public async UniTask Run(List<ActorLines> data)
         {
-            Activate_List(data).Forget();
+            await Activate_List(data);
         }
 
         [UsedImplicitly]
@@ -120,19 +120,16 @@ namespace Doublsb.Dialog
 
                 try
                 {
-                    // TODO: cancelation token should be used for real cancellation, like destroying the GameObject and stuff
-                    // TODO: clicking on chat should not automatically cancel cancellation token, instead the command should receive information that the chat was clicked, possibly from context object / or just from the custom game context
                     var destroyToken = this.GetCancellationTokenOnDestroy();
                     using var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(token, destroyToken);
                     await call(linkedToken.Token);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"Command failed:{e}");
+                    //Debug.LogError($"Command failed:{e}");
                 }
             }
 
-            Debug.Log("Command chain finished");
             _state = State.AwaitingClose;
         }
     }

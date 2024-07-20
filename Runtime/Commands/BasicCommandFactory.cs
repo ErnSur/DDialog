@@ -23,14 +23,14 @@ namespace Doublsb.Dialog
             _actorManager = GetComponent<BasicActorManager>();
         }
 
-        bool ICommandFactory.TryGetCommand(string commandId, string[] args,  out ICommand command)
+        bool ICommandFactory.TryGetCommand(string commandId, string[] args, out ICommand command)
         {
             var arg1 = args.FirstOrDefault();
             switch (commandId)
             {
                 case "actor":
                     // make it write to actor  manager
-                    command = new ActorCommand(_printer,_actorManager, arg1);
+                    command = new ActorCommand(_printer, _actorManager, arg1);
                     return true;
                 case "print":
                     command = new PrintCommand(_printer, arg1);
@@ -51,17 +51,13 @@ namespace Doublsb.Dialog
                     command = new SoundCommand(clip, audioSource);
                     return true;
                 case "emote":
-                        command = new FuncCommand(() => _actorManager.Emote(_actorManager.CurrentActorId, arg1));
-                        return true;
+                    command = new FuncCommand(() => _actorManager.Emote(_actorManager.CurrentActorId, arg1));
+                    return true;
                 case "click":
                     command = new FuncCommand(async ct =>
                     {
-                        while (true)
-                        {
-                            await UniTask.NextFrame(ct);
-                            if (Input.GetMouseButtonUp(0))
-                                break;
-                        }
+                        using var skipCts = BasicPrinter.CreateSkipCts(ct);
+                        await UniTask.WaitUntilCanceled(skipCts.Token);
                     });
                     return true;
                 default:

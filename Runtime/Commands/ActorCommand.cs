@@ -29,7 +29,13 @@ namespace Doublsb.Dialog
 
         async UniTask ICommand.End(CancellationToken cancellationToken)
         {
-            await UniTask.WaitUntil(() => Input.GetMouseButtonUp(0), cancellationToken: cancellationToken);
+            // await to next frame, so we are not consuming someone else's mouse click
+            //await UniTask.NextFrame();
+            using var skipCts = BasicPrinter.CreateSkipCts(cancellationToken);
+            await UniTask.WaitUntilCanceled(skipCts.Token);
+            // await to next frame so other commands won't consume this mouse click
+            //await UniTask.NextFrame();
+            Debug.Log($"Actor Line ended. Canceled: {cancellationToken.IsCancellationRequested}");
             _actorManager.EndActorLine();
             _printer.SetActive(false);
         }

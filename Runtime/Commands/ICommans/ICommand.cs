@@ -26,6 +26,9 @@ namespace Doublsb.Dialog
             }
         }
 
+        /// <summary>
+        /// This function was created so that to command calling user can cancel any command separately from the rest of the commands
+        /// </summary>
         public IEnumerable<Func<CancellationToken, UniTask>> GetExecutionCalls()
         {
             yield return Begin;
@@ -39,6 +42,7 @@ namespace Doublsb.Dialog
         /// <summary>
         /// Called on opening tag and second time if node had any children
         /// </summary>
+        /// <param name="cancellationToken">Used for cancellation of the command (i.e., when the controller game object gets destroyed). If you want to fast-forward text when the user clicks on the chat window I advise to implement this logic in your own print command</param>
         public async UniTask Act(CancellationToken cancellationToken)
         {
             try

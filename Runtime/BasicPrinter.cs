@@ -1,6 +1,7 @@
 namespace Doublsb.Dialog
 {
     using System;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using Cysharp.Threading.Tasks;
     using TMPro;
@@ -52,16 +53,43 @@ namespace Doublsb.Dialog
         }
 
 
+        public static CancellationTokenSource CreateSkipCts(CancellationToken cancellationToken, [CallerMemberName]string callerMemberName = "")
+        {
+            var source = new CancellationTokenSource();
+            UniTask.WaitUntil(() =>
+            {
+                if (!Input.GetMouseButtonDown(0))
+                    return false;
+                Debug.Log($"Skipped: {callerMemberName}");
+                source.Cancel();
+                source.Dispose();
+                return true;
+            }, cancellationToken: cancellationToken).Forget();
+            return CancellationTokenSource.CreateLinkedTokenSource(source.Token, cancellationToken);
+        }
+
         public async UniTask Print(string text, CancellationToken cancellationToken)
         {
+            using var skipCts = CreateSkipCts(cancellationToken);
             for (int i = 0; i < text.Length; i++)
             {
+                if (cancellationToken.IsCancellationRequested)
+                    return;
                 var character = text[i];
                 Text += character;
                 TextPrinted?.Invoke();
 
-                if (!cancellationToken.IsCancellationRequested && Delay != 0)
-                    await UniTask.WaitForSeconds(Delay, false, PlayerLoopTiming.Update);
+                if (skipCts.IsCancellationRequested || Delay <= 0)
+                    continue;
+                try
+                {
+                    await UniTask.WaitForSeconds(Delay, cancellationToken: skipCts.Token);
+                }
+                catch (Exception e)
+                {
+                    if (e is not OperationCanceledException)
+                        Debug.LogError(e);
+                }
             }
         }
 

@@ -8,14 +8,12 @@ namespace Doublsb.Dialog
     {
         public readonly string Script;
         public readonly string ActorId;
-        public readonly bool CanBeSkipped;
         public UnityAction Callback;
 
-        public ActorLines(string script, string actorId = "", UnityAction callback = null, bool canBeSkipped = true)
+        public ActorLines(string script, string actorId = "", UnityAction callback = null)
         {
             Script = script;
             ActorId = actorId;
-            CanBeSkipped = canBeSkipped;
             Callback = callback;
         }
 
