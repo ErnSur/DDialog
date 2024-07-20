@@ -5,7 +5,7 @@ namespace Doublsb.Dialog
     using UnityEngine;
 
     [RequireComponent(typeof(IPrinter))]
-    public class BasicCommandFactory : MonoBehaviour, ICommandFactory
+    public class BasicDialogBehaviour : MonoBehaviour, ICommandFactory
     {
         private IPrinter _printer;
 
@@ -16,15 +16,20 @@ namespace Doublsb.Dialog
         private AudioSource audioSource;
 
         private BasicActorManager _actorManager;
+        //private ICommandFactory[] _commandFactories;
 
         private void Awake()
         {
             _printer = GetComponent<IPrinter>();
             _actorManager = GetComponent<BasicActorManager>();
+            //_commandFactories = GetComponents<ICommandFactory>().Except(new[]{this}).ToArray();
         }
 
         bool ICommandFactory.TryGetCommand(string commandId, string[] args, out ICommand command)
         {
+            // TODO: would be cool but right now we cannot gurantee that user with get this Command factory first with `GetCoponent<>`
+            // if(_commandFactories.Any(factory => factory.TryGetCommand(commandId, args, out command)))
+            //     return true;
             var arg1 = args.FirstOrDefault();
             switch (commandId)
             {
@@ -51,7 +56,7 @@ namespace Doublsb.Dialog
                     command = new SoundCommand(clip, audioSource);
                     return true;
                 case "emote":
-                    command = new FuncCommand(() => _actorManager.Emote(_actorManager.CurrentActorId, arg1));
+                    command = new FuncCommand(() => _actorManager.Emote(_actorManager.ActiveActorId, arg1));
                     return true;
                 case "click":
                     command = new FuncCommand(async ct =>

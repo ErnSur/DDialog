@@ -22,6 +22,6 @@ namespace Doublsb.Dialog
             return root;
         }
 
-        protected bool TryGetCommand(string commandId, string[] args,  out ICommand command);
+        bool TryGetCommand(string commandId, string[] args,  out ICommand command);
     }
 }

@@ -4,7 +4,7 @@ namespace Doublsb.Dialog
     using UnityEngine.UI;
 
     [RequireComponent(typeof(DialogSystem))]
-    public class BasicActorManager : MonoBehaviour, ISoundEffectProvider
+    public class BasicActorManager : MonoBehaviour, IActorManager, ISoundEffectProvider
     {
         [SerializeField]
         private GameObject characters;
@@ -12,8 +12,21 @@ namespace Doublsb.Dialog
         [SerializeField]
         private string defaultEmotionId = "Normal";
 
-        public string CurrentActorId { get; private set; }
-        
+        private string _activeActorId;
+
+        public string ActiveActorId
+        {
+            get => _activeActorId;
+            set
+            {
+                if (value == null)
+                    EndActorLine();
+                _activeActorId = value;
+                if (value != null)
+                    StartActorLine(value);
+            }
+        }
+
         public bool TryGetChatSoundEffects(string actorId, out AudioClip[] clips)
         {
             if (TryGetActor(actorId, out var actor) && actor.ChatSE is { Length: > 0 })
@@ -26,7 +39,27 @@ namespace Doublsb.Dialog
             return false;
         }
 
-        public void Show(string actorId)
+        public void Emote(string actorId, string emotion)
+        {
+            if (!TryGetActor(actorId, out var actor))
+            {
+                Debug.LogError($"Actor not found: {actorId}");
+                return;
+            }
+
+            if (!actor.isActiveAndEnabled)
+            {
+                Debug.LogError($"Actor {actorId} is not shown. Show the actor before emoting {emotion}.");
+                return;
+            }
+
+            if (actor.Emotions.TryGetValue(emotion, out var sprite))
+                actor.GetComponent<Image>().sprite = sprite;
+            else
+                Debug.LogError($"Emotion not found: {emotion} for {actorId}");
+        }
+
+        private void Show(string actorId)
         {
             if (string.IsNullOrEmpty(actorId))
             {
@@ -66,36 +99,16 @@ namespace Doublsb.Dialog
             characters.SetActive(false);
         }
 
-        public void Emote(string actorId, string emotion)
+        private void StartActorLine(string actorId)
         {
-            if (!TryGetActor(actorId, out var actor))
-            {
-                Debug.LogError($"Actor not found: {actorId}");
-                return;
-            }
-
-            if (!actor.isActiveAndEnabled)
-            {
-                Debug.LogError($"Actor {actorId} is not shown. Show the actor before emoting {emotion}.");
-                return;
-            }
-
-            if (actor.Emotions.TryGetValue(emotion, out var sprite))
-                actor.GetComponent<Image>().sprite = sprite;
-            else
-                Debug.LogError($"Emotion not found: {emotion} for {actorId}");
-        }
-
-        public void StartActorLine(string actorId)
-        {
+            Debug.Log($"Starting actor line for {actorId}");
             Show(actorId);
-            CurrentActorId = actorId;
         }
 
-        public void EndActorLine()
+        private void EndActorLine()
         {
             HideAll();
-            CurrentActorId = null;
+            Debug.Log($"Ended actor line {ActiveActorId}");
         }
     }
 }

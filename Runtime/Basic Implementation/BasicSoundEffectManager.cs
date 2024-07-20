@@ -3,7 +3,7 @@ namespace Doublsb.Dialog
     using UnityEngine;
 
     [RequireComponent(typeof(BasicPrinter))]
-    [RequireComponent(typeof(BasicActorManager))]
+    [RequireComponent(typeof(IActorManager))]
     internal class BasicSoundEffectManager : MonoBehaviour
     {
         private ComponentPool<AudioSource> _audioSourcesPool;
@@ -14,11 +14,11 @@ namespace Doublsb.Dialog
         private ISoundEffectProvider _soundEffectProvider;
         public AudioClip[] defaultChatSoundEffects;
         private BasicPrinter _printer;
-        private BasicActorManager _actorManager;
+        private IActorManager _actorManager;
         private void Awake()
         {
             _soundEffectProvider = gameObject.GetComponent<ISoundEffectProvider>();
-            _actorManager = GetComponent<BasicActorManager>();
+            _actorManager = GetComponent<IActorManager>();
             
             _audioSourcesPool = new ComponentPool<AudioSource>(gameObject, 5);
             _printer = gameObject.GetComponent<BasicPrinter>();
@@ -35,7 +35,12 @@ namespace Doublsb.Dialog
         // albo inny dźwięk na każdą literę
         public void Play_ChatSE()
         {
-            var currentActorId = _actorManager.CurrentActorId;
+            var currentActorId = _actorManager.ActiveActorId;
+            if (string.IsNullOrEmpty(currentActorId))
+            {
+                Debug.LogError("Current actor id is null or empty");
+                return;
+            }
             var clips = defaultChatSoundEffects;
             if (_soundEffectProvider != null &&
                 _soundEffectProvider.TryGetChatSoundEffects(currentActorId, out var actorClips))

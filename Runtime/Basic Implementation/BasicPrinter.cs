@@ -7,7 +7,7 @@ namespace Doublsb.Dialog
     using TMPro;
     using UnityEngine;
 
-    internal class BasicPrinter : MonoBehaviour, IPrinter
+    public class BasicPrinter : MonoBehaviour, IPrinter
     {
         public event Action TextPrinted;
 
@@ -77,7 +77,14 @@ namespace Doublsb.Dialog
                     return;
                 var character = text[i];
                 Text += character;
-                TextPrinted?.Invoke();
+                try
+                {
+                    TextPrinted?.Invoke();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to invoke TextPrinted event: {e}");
+                }
 
                 if (skipCts.IsCancellationRequested || Delay <= 0)
                     continue;

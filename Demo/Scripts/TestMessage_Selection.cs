@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Doublsb.Dialog;
 
@@ -18,7 +19,7 @@ public class TestMessage_Selection : MonoBehaviour
         
         dialogTexts.Add(Text1);
 
-        dialogSystem.Run(dialogTexts);
+        dialogSystem.Run(dialogTexts).Forget();
     }
 
     private void OnOtherOption()
@@ -27,7 +28,7 @@ public class TestMessage_Selection : MonoBehaviour
 
         dialogTexts.Add(new ActorLines("Right. You don't have to get the answer."));
 
-        dialogSystem.Run(dialogTexts);
+        dialogSystem.Run(dialogTexts).Forget();
     }
 
     private void OnWrongOption()
