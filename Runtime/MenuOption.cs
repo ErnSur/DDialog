@@ -1,8 +1,9 @@
 namespace Doublsb.Dialog
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
-    [Serializable]
     public class MenuOption
     {
         public readonly string Text;
@@ -12,6 +13,21 @@ namespace Doublsb.Dialog
         {
             Text = text;
             Callback = callback;
+        }
+    }
+
+    public class Menu
+    {
+        public Menu(string id)
+        {
+            Id = id;
+        }
+
+        public string Id { get; }
+        public List<MenuOption> Options { get; } = new();
+        public override string ToString()
+        {
+            return $"<menu=\"{Id}\" options=\"{Options.Select(o=>o.Text)}\"/>";
         }
     }
 }

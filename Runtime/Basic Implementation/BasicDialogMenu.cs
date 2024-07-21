@@ -3,12 +3,14 @@ namespace Doublsb.Dialog
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using Cysharp.Threading.Tasks;
     using UnityEngine;
     using UnityEngine.UI;
 
     public class BasicDialogMenu : MonoBehaviour, IDialogMenuView
     {
         public event Action<int> OptionSelected;
+        public event Action<string,int> MenuOptionSelected;
 
         [SerializeField]
         private GameObject selector;
@@ -20,8 +22,9 @@ namespace Doublsb.Dialog
         private Text selectorItemText;
 
         private IReadOnlyList<string> _options;
+        private int? _lastInput;
         
-        public IEnumerator Open(IReadOnlyList<string> options)
+        public async UniTask<int> Open(IReadOnlyList<string> options)
         {
             _options = options;
             Clear();
@@ -37,13 +40,14 @@ namespace Doublsb.Dialog
             }
             else
                 selector.SetActive(false);
-            yield break;
+            await UniTask.WaitUntil(() => _lastInput.HasValue);
+            return _lastInput!.Value;
         }
         
-        public IEnumerator Close()
+        public UniTask Close()
         {
             selector.SetActive(false);
-            yield break;
+            return UniTask.CompletedTask;
         }
 
         private void Clear()
@@ -65,6 +69,7 @@ namespace Doublsb.Dialog
 
         private void Select(int index)
         {
+            _lastInput = index;
             OptionSelected?.Invoke(index);
         }
     }
