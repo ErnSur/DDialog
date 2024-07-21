@@ -2,8 +2,10 @@ namespace Doublsb.Dialog
 {
     using UnityEngine;
 
+    [DefaultExecutionOrder(DefaultExecutionOrder)]
     public class SoundCommandsHandler : MonoBehaviour
     {
+        public const int DefaultExecutionOrder = ActorCommandsHandler.DefaultExecutionOrder + 1;
         protected ISoundManager SoundManager;
         protected CommandRunner CommandRunner;
 

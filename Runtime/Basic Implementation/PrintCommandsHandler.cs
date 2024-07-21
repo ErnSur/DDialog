@@ -6,9 +6,11 @@ namespace Doublsb.Dialog
     using Cysharp.Threading.Tasks;
     using UnityEngine;
 
+    [DefaultExecutionOrder(DefaultExecutionOrder)]
     [RequireComponent(typeof(ICommandRunnerProvider))]
     public class PrintCommandsHandler : MonoBehaviour
     {
+        public const int DefaultExecutionOrder = 1000;
         protected IPrinter Printer;
         protected CommandRunner CommandRunner;
 

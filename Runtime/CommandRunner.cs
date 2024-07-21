@@ -2,29 +2,17 @@ namespace Doublsb.Dialog
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
     using UnityEngine;
 
+    // TODO: Maybe command text content should be passed here (use-case: note command handler can easily access the note text)
     public delegate UniTask CommandCallback(string[] args, CancellationToken cancellationToken);
 
-    public struct CommandCallbackOptions
-    {
-        // TODO: `BeginAfter` and `EndAfter` methods
-        // public static CommandCallbackOptions BeginBefore(Type type) => new CommandCallbackOptions
-        // {
-        // };
-        public float BeginIndex { get; set; }
-        public float EndIndex { get; set; }
-        public CommandCallbackOptions(float beginIndex = 0, float endIndex = 0)
-        {
-            BeginIndex = beginIndex;
-            EndIndex = endIndex;
-        }
-    }
-    
     public class CommandRunner
     {
         private readonly Dictionary<string, CommandData> _commandCallbacks = new();
@@ -35,12 +23,13 @@ namespace Doublsb.Dialog
         /// <param name="endCallback"> The callback to be executed when the command is finished. </param>
         /// <param name="options"> The options for the callback. </param>
         public void RegisterCommandCallback([NotNull] string commandName, [CanBeNull] CommandCallback beginCallback,
-            [CanBeNull] CommandCallback endCallback = null, CommandCallbackOptions options = default)
+            [CanBeNull] CommandCallback endCallback = null, CommandCallbackOptions options = default, [CallerFilePath] string callerFilePath = "")
         {
             if (!_commandCallbacks.TryGetValue(commandName, out var commandData))
             {
                 _commandCallbacks[commandName] = commandData = new CommandData();
             }
+            callerFilePath = Path.GetFileNameWithoutExtension(callerFilePath);
 
             if (beginCallback != null)
             {
@@ -48,6 +37,7 @@ namespace Doublsb.Dialog
                 // Adjust the index to be within the bounds of the list
                 var newIndex = Mathf.Clamp((int) options.BeginIndex, 0, commandData.BeginCallbacks.Count);
                 commandData.BeginCallbacks.Insert(newIndex, beginCallback);
+                commandData.Debug_BeginCallbackNames.Insert(newIndex, callerFilePath);
             }
 
             if (endCallback != null)
@@ -56,6 +46,7 @@ namespace Doublsb.Dialog
                 // Adjust the index to be within the bounds of the list
                 var newIndex = Mathf.Clamp((int) options.EndIndex, 0, commandData.EndCallback.Count);
                 commandData.EndCallback.Insert(newIndex, endCallback);
+                commandData.Debug_EndCallbackNames.Insert(newIndex, callerFilePath);
             }
         }
 
@@ -118,8 +109,10 @@ namespace Doublsb.Dialog
         {
             [NotNull]
             public readonly List<CommandCallback> BeginCallbacks = new();
+            public readonly List<string> Debug_BeginCallbackNames = new();
             [NotNull]
             public readonly List<CommandCallback> EndCallback = new();
+            public readonly List<string> Debug_EndCallbackNames = new();
         }
     }
 }

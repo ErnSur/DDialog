@@ -3,9 +3,11 @@ namespace Doublsb.Dialog
     using System.Linq;
     using UnityEngine;
 
+    [DefaultExecutionOrder(DefaultExecutionOrder)]
     [RequireComponent(typeof(ICommandRunnerProvider))]
     public class ActorCommandsHandler : MonoBehaviour
     {
+        public const int DefaultExecutionOrder = PrintCommandsHandler.DefaultExecutionOrder + 1;
         protected IActorManager ActorManager;
         protected CommandRunner CommandRunner;
 
