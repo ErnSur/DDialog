@@ -4,15 +4,12 @@ namespace Doublsb.Dialog
 
     public class SoundCommandsHandler : MonoBehaviour
     {
-        [SerializeField]
-        protected AudioSource audioSource;
-        [SerializeField]
-        protected UnityDictionary<string, AudioClip> sounds=new();
+        protected ISoundManager SoundManager;
         protected CommandRunner CommandRunner;
 
         protected virtual void Awake()
         {
-            audioSource = GetComponent<AudioSource>();
+            SoundManager = GetComponent<ISoundManager>();
             CommandRunner = GetComponent<ICommandRunnerProvider>().CommandRunner;
             RegisterCommands();
         }
@@ -31,15 +28,7 @@ namespace Doublsb.Dialog
                     Debug.LogError("Sound command requires an argument");
                     return;
                 }
-
-                var soundId = args[0];
-                if (!sounds.TryGetValue(soundId, out var clip))
-                {
-                    Debug.LogError($"Sound with id {soundId} not found");
-                    return;
-                }
-
-                audioSource.PlayOneShot(clip);
+                SoundManager.PlaySound(args[0]);
             });
         }
     }

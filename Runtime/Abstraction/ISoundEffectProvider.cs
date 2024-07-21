@@ -6,4 +6,8 @@ namespace Doublsb.Dialog
     {
         bool TryGetChatSoundEffects(string actorId, out AudioClip[] clips);
     }
+    public interface ISoundManager
+    {
+        void PlaySound(string soundId);
+    }
 }

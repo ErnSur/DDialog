@@ -1,6 +1,7 @@
 namespace Doublsb.Dialog
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Cysharp.Threading.Tasks;
     using UnityEngine;
@@ -76,33 +77,34 @@ namespace Doublsb.Dialog
 
         protected virtual void RegisterSpeed()
         {
-            var previousSpeed = 0.1f;
+            var previousDelays = new Stack<float>();
             CommandRunner.RegisterCommandCallback("speed", async (args, token) =>
                 {
                     var newSpeed = float.TryParse(args.FirstOrDefault(), out var speed) ? speed : 0.1f;
-                    previousSpeed = Printer.Delay;
+                    previousDelays.Push(Printer.Delay);
                     Printer.Delay = newSpeed;
                 },
                 async (args, token) =>
                 {
-                    Printer.Delay = previousSpeed;
+                    Printer.Delay = previousDelays.Pop();
                 });
         }
 
         protected virtual void RegisterColor()
         {
-            var previousColor = Color.white;
+            var previousColors = new Stack<Color>();
+            
             CommandRunner.RegisterCommandCallback("color", async (args, token) =>
                 {
                     var newColor = ColorUtility.TryParseHtmlString(args.FirstOrDefault(), out var color)
                         ? color
                         : Color.white;
-                    previousColor = Printer.TextColor;
+                    previousColors.Push(Printer.TextColor);
                     Printer.TextColor = newColor;
                 },
                 async (args, token) =>
                 {
-                    Printer.TextColor = previousColor;
+                    Printer.TextColor = previousColors.Pop();
                 });
         }
 
@@ -117,16 +119,16 @@ namespace Doublsb.Dialog
 
         protected virtual void RegisterSize()
         {
-            var previousFontSize = new FontSize();
+            var previousFontSizes = new Stack<FontSize>();
             CommandRunner.RegisterCommandCallback("size", async (args, token) =>
                 {
                     var newSize = FontSize.ParseString(args.FirstOrDefault());
-                    previousFontSize = Printer.TextSize;
+                    previousFontSizes.Push(Printer.TextSize);
                     Printer.TextSize = newSize;
                 },
                 async (args, token) =>
                 {
-                    Printer.TextSize = previousFontSize;
+                    Printer.TextSize = previousFontSizes.Pop();
                 });
         }
     }

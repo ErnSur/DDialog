@@ -15,7 +15,7 @@ public class TestMessage : MonoBehaviour
     {
         var dialogTexts = new List<ActorLines>();
 
-        dialogTexts.Add(new ActorLines("You can easily change text <color=red>color</color>, and <size=+30>size</size> like this.", "Li", () => Show_Example(0)));
+        dialogTexts.Add(new ActorLines("You can easily change<color=blue> text <color=red>color</color>, and</color> the <size=+30>size</size> like this.", "Li", () => Show_Example(0)));
         
         dialogTexts.Add(new ActorLines("Just<wait=1/> put the command in the string!", "Li", () => Show_Example(1)));
         

@@ -3,6 +3,7 @@ namespace Doublsb.Dialog
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using System.Threading.Tasks;
     using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
     using UnityEngine;
@@ -63,6 +64,16 @@ namespace Doublsb.Dialog
             // TODO: set actor ID in the `WriteSo` method to the actor tag
             var commandTree = CommandParser.Parse(script);
             await Execute(commandTree, cancellationToken);
+        }
+        
+        public async Task ExecuteBegin(string commandName, string[] args, CancellationToken cancellationToken)
+        {
+            await ExecuteCallbacks(new CommandTag(commandName, args), _commandCallbacks[commandName].BeginCallbacks, cancellationToken);
+        }
+        
+        public async Task ExecuteEnd(string commandName, string[] args, CancellationToken cancellationToken)
+        {
+            await ExecuteCallbacks(new CommandTag(commandName, args), _commandCallbacks[commandName].EndCallback, cancellationToken);
         }
 
         private async UniTask Execute(CommandTag commandTree, CancellationToken cancellationToken)

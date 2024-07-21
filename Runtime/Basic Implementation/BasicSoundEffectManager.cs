@@ -4,17 +4,19 @@ namespace Doublsb.Dialog
 
     [RequireComponent(typeof(BasicPrinter))]
     [RequireComponent(typeof(IActorManager))]
-    internal class BasicSoundEffectManager : MonoBehaviour
+    internal class BasicSoundEffectManager : MonoBehaviour, ISoundManager
     {
-        private ComponentPool<AudioSource> _audioSourcesPool;
-
-        private AudioSource _activeAudioSource;
         public float minPlaybackTime = 0.2f;
-        
-        private ISoundEffectProvider _soundEffectProvider;
         public AudioClip[] defaultChatSoundEffects;
+        [SerializeField]
+        protected UnityDictionary<string, AudioClip> sounds = new();
+        
+        private ComponentPool<AudioSource> _audioSourcesPool;
+        private AudioSource _activeAudioSource;
+        private ISoundEffectProvider _soundEffectProvider;
         private BasicPrinter _printer;
         private IActorManager _actorManager;
+        
         private void Awake()
         {
             _soundEffectProvider = gameObject.GetComponent<ISoundEffectProvider>();
@@ -71,6 +73,16 @@ namespace Doublsb.Dialog
             
             _activeAudioSource.clip = clip;
             _activeAudioSource.Play();
+        }
+
+        public void PlaySound(string soundId)
+        {
+            if (!sounds.TryGetValue(soundId, out var clip))
+            {
+                Debug.LogError($"Sound with id {soundId} not found");
+                return;
+            }
+            PlaySound(clip);
         }
     }
 }
