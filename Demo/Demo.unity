@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogSystem: {fileID: 325689816}
-  Example:
+  examples:
   - {fileID: 1970942286}
   - {fileID: 608540190}
   - {fileID: 398852858}
@@ -523,6 +523,18 @@ PrefabInstance:
       value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 3221682429307560211, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: sounds.list.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3221682429307560211, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: sounds.list.Array.data[0].key
+      value: haha
+      objectReference: {fileID: 0}
+    - target: {fileID: 3221682429307560211, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: sounds.list.Array.data[0].value
+      value: 
+      objectReference: {fileID: 8300000, guid: 7796b54b22f7f02439fc159ff0ec2b7c, type: 3}
+    - target: {fileID: 3221682429307560211, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: defaultChatSoundEffects.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -614,10 +626,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4094011681938070649, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4094011683184476936, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_Name
       value: DialogAsset
@@ -660,6 +668,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4094011683184477044, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4094011683184477044, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4094011683184477044, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4094011683184477044, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
+      propertyPath: m_LocalScale.z
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4094011683184477044, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
@@ -714,13 +734,9 @@ PrefabInstance:
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
       objectReference: {fileID: 0}
-    - target: {fileID: 4094011683184477047, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-      propertyPath: m_BlockingMask.m_Bits
-      value: 55
-      objectReference: {fileID: 0}
     - target: {fileID: 4094011683457312917, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4532665532898427240, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_SizeDelta.y
@@ -749,10 +765,6 @@ PrefabInstance:
     - target: {fileID: 4865898740716241557, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_AnchorMin.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4879539704714554952, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-      propertyPath: <Delay>k__BackingField
-      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 5059723703542122742, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -854,22 +866,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-      propertyPath: audioSource
-      value: 
-      objectReference: {fileID: 325689822}
-    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-      propertyPath: sounds.list.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-      propertyPath: sounds.list.Array.data[0].key
-      value: haha
-      objectReference: {fileID: 0}
-    - target: {fileID: 8646186211154652067, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-      propertyPath: sounds.list.Array.data[0].value
-      value: 
-      objectReference: {fileID: 8300000, guid: 7796b54b22f7f02439fc159ff0ec2b7c, type: 3}
     - target: {fileID: 8870563986960605807, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -931,11 +927,6 @@ MonoBehaviour:
 --- !u!224 &325689817 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4094011683457312916, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
-  m_PrefabInstance: {fileID: 325689815}
-  m_PrefabAsset: {fileID: 0}
---- !u!82 &325689822 stripped
-AudioSource:
-  m_CorrespondingSourceObject: {fileID: 4094011683184477040, guid: d536fa71dd00cf349a228e41212ace48, type: 3}
   m_PrefabInstance: {fileID: 325689815}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &343883589

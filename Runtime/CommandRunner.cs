@@ -66,12 +66,12 @@ namespace Doublsb.Dialog
             await Execute(commandTree, cancellationToken);
         }
         
-        public async Task ExecuteBegin(string commandName, string[] args, CancellationToken cancellationToken)
+        public async Task ExecuteBegin(string commandName, CancellationToken cancellationToken, params string[] args)
         {
             await ExecuteCallbacks(new CommandTag(commandName, args), _commandCallbacks[commandName].BeginCallbacks, cancellationToken);
         }
         
-        public async Task ExecuteEnd(string commandName, string[] args, CancellationToken cancellationToken)
+        public async Task ExecuteEnd(string commandName, CancellationToken cancellationToken,params string[] args)
         {
             await ExecuteCallbacks(new CommandTag(commandName, args), _commandCallbacks[commandName].EndCallback, cancellationToken);
         }
@@ -101,7 +101,8 @@ namespace Doublsb.Dialog
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    if(e is not OperationCanceledException)
+                        Debug.LogException(e);
                 }
             }
         }

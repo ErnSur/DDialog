@@ -8,21 +8,24 @@ namespace Doublsb.Dialog
     {
         public float minPlaybackTime = 0.2f;
         public AudioClip[] defaultChatSoundEffects;
+
         [SerializeField]
         protected UnityDictionary<string, AudioClip> sounds = new();
-        
+
         private ComponentPool<AudioSource> _audioSourcesPool;
         private AudioSource _activeAudioSource;
+        private AudioSource _oneShotAudioSource;
         private ISoundEffectProvider _soundEffectProvider;
         private BasicPrinter _printer;
         private IActorManager _actorManager;
-        
+
         private void Awake()
         {
             _soundEffectProvider = gameObject.GetComponent<ISoundEffectProvider>();
             _actorManager = GetComponent<IActorManager>();
-            
+
             _audioSourcesPool = new ComponentPool<AudioSource>(gameObject, 5);
+            _oneShotAudioSource = _audioSourcesPool.Rent();
             _printer = gameObject.GetComponent<BasicPrinter>();
             _printer.TextPrinted += OnCharacterPrinted;
         }
@@ -30,12 +33,12 @@ namespace Doublsb.Dialog
         private void OnCharacterPrinted()
         {
             if (_printer.Text[^1] != ' ')
-                Play_ChatSE();
+                PlayChatSfx();
         }
-        
+
         // Idea: play a different sound on samogłoska i spółgłoska
         // albo inny dźwięk na każdą literę
-        public void Play_ChatSE()
+        private void PlayChatSfx()
         {
             var currentActorId = _actorManager.ActiveActorId;
             if (string.IsNullOrEmpty(currentActorId))
@@ -43,6 +46,7 @@ namespace Doublsb.Dialog
                 Debug.LogError("Current actor id is null or empty");
                 return;
             }
+
             var clips = defaultChatSoundEffects;
             if (_soundEffectProvider != null &&
                 _soundEffectProvider.TryGetChatSoundEffects(currentActorId, out var actorClips))
@@ -52,10 +56,10 @@ namespace Doublsb.Dialog
 
             var clip = clips[Random.Range(0, clips.Length)];
             if (clip != null)
-                PlaySound(clip);
+                PlaySoundWithCooldown(clip);
         }
 
-        public void PlaySound(AudioClip clip)
+        private void PlaySoundWithCooldown(AudioClip clip)
         {
             if (_activeAudioSource != null)
             {
@@ -70,8 +74,9 @@ namespace Doublsb.Dialog
             {
                 _activeAudioSource = _audioSourcesPool.Rent();
             }
-            
+
             _activeAudioSource.clip = clip;
+            Debug.Log($"Playing sound: {clip.name}", clip);
             _activeAudioSource.Play();
         }
 
@@ -82,7 +87,8 @@ namespace Doublsb.Dialog
                 Debug.LogError($"Sound with id {soundId} not found");
                 return;
             }
-            PlaySound(clip);
+
+            _oneShotAudioSource.PlayOneShot(clip);
         }
     }
 }
