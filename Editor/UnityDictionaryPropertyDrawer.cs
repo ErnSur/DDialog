@@ -1,8 +1,9 @@
-using UnityEditor;
-using UnityEngine;
-
-namespace Doublsb.Dialog.Editor
+namespace QuickEye.PeeDialog.Editor
 {
+    using PeeDialog;
+    using UnityEditor;
+    using UnityEngine;
+
     [CustomPropertyDrawer(typeof(UnityDictionary<,>))]
     public class UnityDictionaryPropertyDrawer : PropertyDrawer
     {

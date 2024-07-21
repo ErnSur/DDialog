@@ -1,4 +1,4 @@
-namespace Doublsb.Dialog
+namespace QuickEye.PeeDialog
 {
     using UnityEngine;
     using UnityEngine.UI;

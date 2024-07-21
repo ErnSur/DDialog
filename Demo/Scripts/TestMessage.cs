@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using Doublsb.Dialog;
+using QuickEye.PeeDialog;
 using UnityEngine.Serialization;
 
 public class TestMessage : MonoBehaviour

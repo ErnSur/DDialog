@@ -2,7 +2,6 @@ namespace Tests
 {
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using Doublsb.Dialog;
 
     // internal class TestCommand : ICommand
     // {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using Doublsb.Dialog;
+using QuickEye.PeeDialog;
 
 public class TestMessage_Selection : MonoBehaviour
 {

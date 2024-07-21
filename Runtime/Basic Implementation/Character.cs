@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace Doublsb.Dialog
+namespace QuickEye.PeeDialog
 {
     [RequireComponent(typeof(Image))]
     public class Character : MonoBehaviour
