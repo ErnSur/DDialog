@@ -4,20 +4,19 @@ namespace QuickEye.PeeDialog
     using System.Collections.Generic;
     using System.Linq;
     using Cysharp.Threading.Tasks;
+    using JetBrains.Annotations;
     using UnityEngine;
 
-    [DefaultExecutionOrder(DefaultExecutionOrder)]
-    [RequireComponent(typeof(ICommandRunnerProvider))]
-    public class PrintCommandsHandler : MonoBehaviour
+    [PublicAPI]
+    public class PrintCommandsHandler
     {
-        public const int DefaultExecutionOrder = 1000;
         protected IPrinter Printer;
         protected CommandRunner CommandRunner;
 
-        protected virtual void Awake()
+        public PrintCommandsHandler(CommandRunner commandRunner, IPrinter printer)
         {
-            Printer = GetComponent<IPrinter>();
-            CommandRunner = GetComponent<ICommandRunnerProvider>().CommandRunner;
+            CommandRunner = commandRunner;
+            Printer = printer;
             RegisterCommands();
         }
 
@@ -114,6 +113,7 @@ namespace QuickEye.PeeDialog
         {
             CommandRunner.RegisterCommandCallback("print", async (args, token) =>
             {
+                Debug.Log($"Printing: {args.FirstOrDefault()}");
                 var text = args.FirstOrDefault();
                 await Printer.Print(text, token);
             });

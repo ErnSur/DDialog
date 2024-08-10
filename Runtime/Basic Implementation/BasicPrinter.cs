@@ -4,18 +4,14 @@ namespace QuickEye.PeeDialog
     using System.Runtime.CompilerServices;
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using TMPro;
     using UnityEngine;
 
-    public class BasicPrinter : MonoBehaviour, IPrinter
+    /// <summary>
+    /// Basic implementation of <see cref="IPrinter"/> using meant to be used with TextMeshPro or UI Toolkit.
+    /// </summary>
+    public abstract class BasicPrinter : IPrinter
     {
-        public event Action TextPrinted;
-
-        [SerializeField]
-        private GameObject textWindow;
-
-        [SerializeField]
-        private TMP_Text textComponent;
+        public event Action TextSegmentPrinted;
 
         [field: SerializeField]
         public float Delay { get; set; } = 0.02f;
@@ -32,7 +28,7 @@ namespace QuickEye.PeeDialog
             set
             {
                 textSize = value;
-                textComponent.text += $"<size={textSize.ToString()}>";
+                Text += $"<size={textSize.ToString()}>";
             }
         }
 
@@ -42,43 +38,46 @@ namespace QuickEye.PeeDialog
             set
             {
                 textColor = value;
-                textComponent.text += $"<color=#{ColorUtility.ToHtmlStringRGBA(textColor)}>";
+                Text += $"<color=#{ColorUtility.ToHtmlStringRGBA(textColor)}>";
             }
         }
 
-        public string Text
-        {
-            get => textComponent.text;
-            set => textComponent.text = value;
-        }
+        public abstract string Text { get; set; }
 
-        public static CancellationTokenSource CreateSkipCts(CancellationToken cancellationToken, [CallerMemberName]string callerMemberName = "")
+        public static CancellationTokenSource CreateSkipCts(CancellationToken cancellationToken,
+                                                            [CallerMemberName] string callerMemberName = "")
         {
             var source = new CancellationTokenSource();
             UniTask.WaitUntil(() =>
-            {
-                if (!Input.GetMouseButtonDown(0))
-                    return false;
-                Debug.Log($"Skipped: {callerMemberName}");
-                source.Cancel();
-                source.Dispose();
-                return true;
-            }, cancellationToken: cancellationToken).Forget();
+                              {
+                                  if (!Input.GetMouseButtonDown(0))
+                                      return false;
+
+                                  Debug.Log($"Skipped: {callerMemberName}");
+                                  source.Cancel();
+                                  source.Dispose();
+                                  return true;
+                              },
+                              cancellationToken: cancellationToken)
+                   .Forget();
+
             return CancellationTokenSource.CreateLinkedTokenSource(source.Token, cancellationToken);
         }
 
         public async UniTask Print(string text, CancellationToken cancellationToken)
         {
+            Debug.Log($"Printing text: {text}");
             using var skipCts = CreateSkipCts(cancellationToken);
             for (int i = 0; i < text.Length; i++)
             {
                 if (cancellationToken.IsCancellationRequested)
                     return;
+
                 var character = text[i];
                 Text += character;
                 try
                 {
-                    TextPrinted?.Invoke();
+                    TextSegmentPrinted?.Invoke();
                 }
                 catch (Exception e)
                 {
@@ -87,6 +86,7 @@ namespace QuickEye.PeeDialog
 
                 if (skipCts.IsCancellationRequested || Delay <= 0)
                     continue;
+
                 try
                 {
                     await UniTask.WaitForSeconds(Delay, cancellationToken: skipCts.Token);
@@ -107,18 +107,6 @@ namespace QuickEye.PeeDialog
             Text = "";
         }
 
-        public void SetActive(bool active)
-        {
-            textWindow.SetActive(active);
-        }
-    }
-
-    public class BasicPrinterCommandHandler : MonoBehaviour
-    {
-        private void Awake()
-        {
-            var printer = GetComponent<IPrinter>();
-            var commandRunner = GetComponent<ICommandRunnerProvider>();
-        }
+        public abstract void SetActive(bool active);
     }
 }

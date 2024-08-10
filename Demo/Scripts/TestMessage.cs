@@ -1,28 +1,33 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using QuickEye.PeeDialog;
-using UnityEngine.Serialization;
 
 public class TestMessage : MonoBehaviour
 {
-    public CommandRunnerComponent dialogSystem;
+    public DialogSystemComponent dialogSystem;
 
     public GameObject[] examples;
 
     private CancellationTokenSource _disableCancellationTokenSource;
     private CancellationToken CancellationToken => _disableCancellationTokenSource.Token;
 
-    [ContextMenu("Run")]
     private void OnEnable()
     {
         _disableCancellationTokenSource?.Dispose();
         _disableCancellationTokenSource = new CancellationTokenSource();
+    }
+
+    [ContextMenu("Run")]
+    private void Start()
+    {
         RunDialog().Forget();
     }
 
     private async UniTaskVoid RunDialog()
     {
+        
         await Say("Li",
             "<speed=0.2>. . .</speed><color=#7BA6FA> Hello!, <color=orange>I'm</color> Li</color>. I'm here to explain the basic features of the<wait=.3/><emote=Happy/><sound=haha/><wait=1/><size=+50/> Pee Dialog.");
         await Say("Sa", "You can easily change text <color=red>color</color>, and <size=+30>size</size> like this.");
@@ -48,7 +53,7 @@ public class TestMessage : MonoBehaviour
     private async UniTask Say(string actor, string script)
     {
         var scriptWithActor = $"<actor={actor}>{script}</actor>";
-        await dialogSystem.CommandRunner.Execute(scriptWithActor, CancellationToken);
+        await dialogSystem.DialogEngine.Print(scriptWithActor, CancellationToken);
     }
 
     private void ShowExample(int index)

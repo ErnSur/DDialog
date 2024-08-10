@@ -1,18 +1,18 @@
 namespace QuickEye.PeeDialog
 {
+    using JetBrains.Annotations;
     using UnityEngine;
 
-    [DefaultExecutionOrder(DefaultExecutionOrder)]
-    public class SoundCommandsHandler : MonoBehaviour
+    [PublicAPI]
+    public class SoundCommandsHandler
     {
-        public const int DefaultExecutionOrder = ActorCommandsHandler.DefaultExecutionOrder + 1;
         protected ISoundManager SoundManager;
         protected CommandRunner CommandRunner;
 
-        protected virtual void Awake()
+        public SoundCommandsHandler(CommandRunner commandRunner, ISoundManager soundManager)
         {
-            SoundManager = GetComponent<ISoundManager>();
-            CommandRunner = GetComponent<ICommandRunnerProvider>().CommandRunner;
+            SoundManager = soundManager;
+            CommandRunner = commandRunner;
             RegisterCommands();
         }
 

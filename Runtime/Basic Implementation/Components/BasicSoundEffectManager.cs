@@ -2,7 +2,7 @@ namespace QuickEye.PeeDialog
 {
     using UnityEngine;
 
-    [RequireComponent(typeof(BasicPrinter))]
+    [RequireComponent(typeof(IPrinter))]
     [RequireComponent(typeof(IActorManager))]
     internal class BasicSoundEffectManager : MonoBehaviour, ISoundManager
     {
@@ -16,7 +16,7 @@ namespace QuickEye.PeeDialog
         private AudioSource _activeAudioSource;
         private AudioSource _oneShotAudioSource;
         private ISoundEffectProvider _soundEffectProvider;
-        private BasicPrinter _printer;
+        private IPrinter _printer;
         private IActorManager _actorManager;
 
         private void Awake()
@@ -26,8 +26,8 @@ namespace QuickEye.PeeDialog
 
             _audioSourcesPool = new ComponentPool<AudioSource>(gameObject, 5);
             _oneShotAudioSource = _audioSourcesPool.Rent();
-            _printer = gameObject.GetComponent<BasicPrinter>();
-            _printer.TextPrinted += OnCharacterPrinted;
+            _printer = gameObject.GetComponent<IPrinter>();
+            _printer.TextSegmentPrinted += OnCharacterPrinted;
         }
 
         private void OnCharacterPrinted()

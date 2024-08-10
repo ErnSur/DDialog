@@ -1,20 +1,19 @@
 namespace QuickEye.PeeDialog
 {
     using System.Linq;
+    using JetBrains.Annotations;
     using UnityEngine;
 
-    [DefaultExecutionOrder(DefaultExecutionOrder)]
-    [RequireComponent(typeof(ICommandRunnerProvider))]
-    public class ActorCommandsHandler : MonoBehaviour
+    [PublicAPI]
+    public class ActorCommandsHandler
     {
-        public const int DefaultExecutionOrder = PrintCommandsHandler.DefaultExecutionOrder + 1;
         protected IActorManager ActorManager;
         protected CommandRunner CommandRunner;
 
-        protected virtual void Awake()
+        public ActorCommandsHandler(CommandRunner commandRunner, IActorManager actorManager)
         {
-            ActorManager = GetComponent<IActorManager>();
-            CommandRunner = GetComponent<ICommandRunnerProvider>().CommandRunner;
+            CommandRunner = commandRunner;
+            ActorManager = actorManager;
             RegisterCommands();
         }
 

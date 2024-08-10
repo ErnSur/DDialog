@@ -54,6 +54,7 @@ namespace QuickEye.PeeDialog
         {
             // TODO: set actor ID in the `WriteSo` method to the actor tag
             var commandTree = CommandParser.Parse(script);
+            //Debug.Log($"Executing command tree: {JsonUtility.ToJson(commandTree,true)}");
             await Execute(commandTree, cancellationToken);
         }
         
