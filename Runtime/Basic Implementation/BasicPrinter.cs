@@ -50,13 +50,15 @@ namespace QuickEye.PeeDialog
             var source = new CancellationTokenSource();
             UniTask.WaitUntil(() =>
                               {
-                                  if (!Input.GetMouseButtonDown(0))
-                                      return false;
+                                  if (Input.GetMouseButtonDown(0) || Input.GetKey(KeyCode.Space))
+                                  {
+                                      Debug.Log($"Skipped: {callerMemberName}");
+                                      source.Cancel();
+                                      source.Dispose();
+                                      return true;
+                                  }
 
-                                  Debug.Log($"Skipped: {callerMemberName}");
-                                  source.Cancel();
-                                  source.Dispose();
-                                  return true;
+                                  return false;
                               },
                               cancellationToken: cancellationToken)
                    .Forget();
