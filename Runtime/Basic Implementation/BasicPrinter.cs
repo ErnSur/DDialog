@@ -68,7 +68,6 @@ namespace QuickEye.PeeDialog
 
         public async UniTask Print(string text, CancellationToken cancellationToken)
         {
-            Debug.Log($"Printing text: {text}");
             using var skipCts = CreateSkipCts(cancellationToken);
             for (int i = 0; i < text.Length; i++)
             {
