@@ -52,7 +52,7 @@ namespace QuickEye.PeeDialog
                               {
                                   if (Input.GetMouseButtonDown(0) || Input.GetKey(KeyCode.Space))
                                   {
-                                      Debug.Log($"Skipped: {callerMemberName}");
+                                      //Debug.Log($"Skipped: {callerMemberName}");
                                       source.Cancel();
                                       source.Dispose();
                                       return true;
