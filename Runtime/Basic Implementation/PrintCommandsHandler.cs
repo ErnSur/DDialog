@@ -3,6 +3,7 @@ namespace QuickEye.PeeDialog
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
     using UnityEngine;
@@ -32,7 +33,7 @@ namespace QuickEye.PeeDialog
             RegisterBold();
         }
 
-        private void RegisterActor()
+        protected virtual void RegisterActor()
         {
             CommandRunner.RegisterCommandCallback("actor",
                                                   async (args, token) =>
@@ -86,28 +87,31 @@ namespace QuickEye.PeeDialog
         protected virtual void RegisterSpeed()
         {
             var previousDelays = new Stack<float>();
-            CommandRunner.RegisterCommandCallback("speed",
-                                                  async (args, token) =>
-                                                  {
-                                                      var speedArg = args.FirstOrDefault();
-                                                      var newSpeed = 0.1f;
-                                                      switch (speedArg)
-                                                      {
-                                                          case "low":
-                                                              newSpeed = 0.1f;
-                                                              break;
-                                                          default:
-                                                              newSpeed = float.TryParse(speedArg, out var speed)
-                                                                  ? speed
-                                                                  : 0.1f;
 
-                                                              break;
-                                                      }
+            CommandRunner.RegisterCommandCallback("speed", BeginCallback, EndCallback);
+            return;
 
-                                                      previousDelays.Push(Printer.Delay);
-                                                      Printer.Delay = newSpeed;
-                                                  },
-                                                  async (args, token) => { Printer.Delay = previousDelays.Pop(); });
+            UniTask BeginCallback(string[] args, CancellationToken token)
+            {
+                var speedArg = args.FirstOrDefault();
+
+                if (!float.TryParse(speedArg, out var newSpeed))
+                {
+                    Debug.LogError($"Cannot parse float number: {speedArg}");
+                    // Push new value either way because the EndCallback needs to pop it
+                    newSpeed = Printer.Delay;
+                }
+
+                previousDelays.Push(Printer.Delay);
+                Printer.Delay = newSpeed;
+                return UniTask.CompletedTask;
+            }
+
+            UniTask EndCallback(string[] args, CancellationToken token)
+            {
+                Printer.Delay = previousDelays.Pop();
+                return UniTask.CompletedTask;
+            }
         }
 
         protected virtual void RegisterColor()

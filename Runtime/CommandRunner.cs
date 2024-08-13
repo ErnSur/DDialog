@@ -11,8 +11,13 @@ namespace QuickEye.PeeDialog
     using UnityEngine;
 
     // TODO: Maybe command text content should be passed here (use-case: note command handler can easily access the note text)
+    // TODO: Should sync commands be supported?
     public delegate UniTask CommandCallback(string[] args, CancellationToken cancellationToken);
 
+    // Other names could be:
+    // - ScriptRunner
+    // - ScriptExecutor
+    // - ScriptInterpreter
     public class CommandRunner
     {
         private readonly Dictionary<string, CommandData> _commandCallbacks = new();
@@ -47,6 +52,22 @@ namespace QuickEye.PeeDialog
                 var newIndex = Mathf.Clamp((int) options.EndIndex, 0, commandData.EndCallback.Count);
                 commandData.EndCallback.Insert(newIndex, endCallback);
                 commandData.Debug_EndCallbackNames.Insert(newIndex, callerFilePath);
+            }
+        }
+        
+        public void AddAlias(string alias, string commandId, params string[] commandArgs)
+        {
+            RegisterCommandCallback(alias, BeginCommand, EndCommand);
+            return;
+
+            async UniTask BeginCommand(string[] _, CancellationToken cancellationToken)
+            {
+                await ExecuteBegin(commandId, cancellationToken, commandArgs);
+            }
+
+            async UniTask EndCommand(string[] _, CancellationToken cancellationToken)
+            {
+                await ExecuteEnd(commandId, cancellationToken);
             }
         }
 
