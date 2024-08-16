@@ -120,13 +120,6 @@ namespace QuickEye.PeeDialog
             }
         }
 
-
-        // TODO: implement. This method should be used to jump to a specific command in the execution tree. i.e., go to label in renpy
-        private void GoTo(string commandLabel)
-        {
-            throw new NotImplementedException();
-        }
-
         private class CommandData
         {
             [NotNull]
