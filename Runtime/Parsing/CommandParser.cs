@@ -12,6 +12,7 @@ namespace QuickEye.PeeDialog
         {
             try
             {
+                text = EscapeSpecialChars(text);
                 text = ReplaceShorthandXmlTags(text);
                 var xDoc = XDocument.Parse($"<root>{text}</root>");
                 return XmlToCommandDefinition(xDoc.Root);
@@ -29,8 +30,7 @@ namespace QuickEye.PeeDialog
             // Tag start callback
             var root = new CommandTag
             {
-                name = xmlRoot.Name.LocalName,
-                args = xmlRoot.Attributes().Select(a => a.Value).ToArray()
+                name = xmlRoot.Name.LocalName, args = xmlRoot.Attributes().Select(a => a.Value).ToArray()
             };
 
             foreach (var node in xmlRoot.Nodes())
@@ -49,6 +49,13 @@ namespace QuickEye.PeeDialog
             return root;
         }
 
+        private static string EscapeSpecialChars(string text)
+        {
+            return text.Replace("<<", "&lt;")
+                       .Replace(">>", "&gt;")
+                       .Replace("&&", "&amp;");
+        }
+
         /// <summary>
         /// Replace shorthand XML tags with full XML tags.
         /// <example>
@@ -65,6 +72,7 @@ namespace QuickEye.PeeDialog
             // Group 3: value (without quotes) (only if quotes are missing)
             var xmlShorthandElementsRegex =
                 @"<(?:(\w+):)?(?<tagName>\w+(?:\.\w+)?)(?:=(?<value>[^""'\s/>]+)|=[""'](?:[^""']*?)[""'])";
+
             var matches = Regex.Matches(textWithCommands, xmlShorthandElementsRegex);
             // Reverse the matches so that we can insert the spaces and quotes without messing up the indexes
             foreach (Match match in matches.Reverse())
