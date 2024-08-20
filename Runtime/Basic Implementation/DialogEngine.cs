@@ -7,13 +7,13 @@ namespace QuickEye.PeeDialog
     {
         public CommandRunner CommandRunner { get; } = new CommandRunner();
         protected readonly IPrinter Printer;
-        
+
         public DialogEngine(IPrinter printer)
         {
             Printer = printer;
             new PrintCommandsHandler(CommandRunner, printer);
         }
-        
+
         public void AddSoundSupport(ISoundManager soundManager)
         {
             new SoundCommandsHandler(CommandRunner, soundManager);

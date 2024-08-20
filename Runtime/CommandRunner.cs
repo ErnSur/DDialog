@@ -54,7 +54,7 @@ namespace QuickEye.PeeDialog
                 commandData.Debug_EndCallbackNames.Insert(newIndex, callerFilePath);
             }
         }
-        
+
         public void AddAlias(string alias, string commandId, params string[] commandArgs)
         {
             RegisterCommandCallback(alias, BeginCommand, EndCommand);
@@ -78,12 +78,12 @@ namespace QuickEye.PeeDialog
             //Debug.Log($"Executing command tree: {JsonUtility.ToJson(commandTree,true)}");
             await Execute(commandTree, cancellationToken);
         }
-        
+
         public async Task ExecuteBegin(string commandName, CancellationToken cancellationToken, params string[] args)
         {
             await ExecuteCallbacks(new CommandTag(commandName, args), _commandCallbacks[commandName].BeginCallbacks, cancellationToken);
         }
-        
+
         public async Task ExecuteEnd(string commandName, CancellationToken cancellationToken,params string[] args)
         {
             await ExecuteCallbacks(new CommandTag(commandName, args), _commandCallbacks[commandName].EndCallback, cancellationToken);
