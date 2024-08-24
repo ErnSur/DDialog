@@ -1,5 +1,6 @@
 namespace QuickEye.PeeDialog
 {
+    using System;
     using UnityEngine;
 
     [RequireComponent(typeof(IPrinter))]
@@ -17,6 +18,11 @@ namespace QuickEye.PeeDialog
 
             if (TryGetComponent(out IActorManager actorManager))
                 DialogEngine.AddActorSupport(actorManager);
+        }
+
+        void OnDestroy()
+        {
+            CommandRunner.CancelExecution();
         }
     }
 }

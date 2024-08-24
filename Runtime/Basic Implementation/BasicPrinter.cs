@@ -21,7 +21,7 @@ namespace QuickEye.PeeDialog
 
         [SerializeField]
         private FontSize textSize;
-
+        
         public FontSize TextSize
         {
             get => textSize;

@@ -40,9 +40,15 @@ namespace QuickEye.PeeDialog
             set => Printer.Delay = value;
         }
 
-        public UniTask Print(string text, CancellationToken cancellationToken)
+        public async UniTask Print(string text, CancellationToken cancellationToken)
         {
-            return Printer.Print(text, cancellationToken);
+            if (this == null)
+                return;
+
+            using var linkedCts =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
+
+            await Printer.Print(text, linkedCts.Token);
         }
 
         public void Reset()

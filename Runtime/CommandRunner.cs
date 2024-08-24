@@ -21,6 +21,13 @@ namespace QuickEye.PeeDialog
     public class CommandRunner
     {
         private readonly Dictionary<string, CommandData> _commandCallbacks = new();
+        
+        private CancellationTokenSource _cancellationTokenSource;
+
+        public void CancelExecution() 
+        {
+            _cancellationTokenSource?.Cancel();
+        }
 
         // TODO: Add support for floating point indexing
         /// <param name="commandName"> The name of the command to register the callback for. </param>
@@ -73,10 +80,12 @@ namespace QuickEye.PeeDialog
 
         public async UniTask Execute(string script, CancellationToken cancellationToken = default)
         {
-            // TODO: set actor ID in the `WriteSo` method to the actor tag
-            var commandTree = CommandParser.Parse(script);
-            //Debug.Log($"Executing command tree: {JsonUtility.ToJson(commandTree,true)}");
-            await Execute(commandTree, cancellationToken);
+            using(_cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+            {
+                var commandTree = CommandParser.Parse(script);
+                //Debug.Log($"Executing command tree: {JsonUtility.ToJson(commandTree,true)}");
+                await Execute(commandTree, _cancellationTokenSource.Token);
+            }
         }
 
         public async Task ExecuteBegin(string commandName, CancellationToken cancellationToken, params string[] args)
