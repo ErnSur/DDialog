@@ -26,7 +26,7 @@ namespace QuickEye.PeeDialog
 
         public async UniTask Print(string script,CancellationToken cancellationToken=default)
         {
-            await CommandRunner.Execute(script,cancellationToken);
+            await CommandRunner.Execute(script, cancellationToken);
         }
     }
 }

@@ -35,6 +35,8 @@ namespace QuickEye.PeeDialog
 
         protected virtual void RegisterActor()
         {
+            var skipCooldown = TimeSpan.FromSeconds(0.15f);
+            var lastSkipTime = 0f;
             CommandRunner.RegisterCommandCallback("actor",
                                                   async (args, token) =>
                                                   {
@@ -44,7 +46,10 @@ namespace QuickEye.PeeDialog
                                                   async (args, token) =>
                                                   {
                                                       using var skipCts = BasicPrinter.CreateSkipCts(token);
+                                                        if (Time.unscaledTime - lastSkipTime < skipCooldown.TotalSeconds)
+                                                            await UniTask.Delay(TimeSpan.FromSeconds(skipCooldown.TotalSeconds - (Time.unscaledTime - lastSkipTime)));
                                                       await UniTask.WaitUntilCanceled(skipCts.Token);
+                                                      lastSkipTime = Time.unscaledTime;
                                                       Printer.SetActive(false);
                                                       Printer.Reset();
                                                   });
