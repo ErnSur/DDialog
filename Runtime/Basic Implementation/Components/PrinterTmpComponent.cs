@@ -2,63 +2,60 @@ namespace QuickEye.PeeDialog
 {
     using System;
     using System.Threading;
-    using Cysharp.Threading.Tasks;
+    using System.Threading.Tasks;
     using UnityEngine;
 
     public class PrinterTmpComponent : MonoBehaviour, IPrinter
     {
         [SerializeField]
-        private PrinterTmp Printer;
+        private PrinterTmp _printer;
 
         public event Action TextSegmentPrinted
         {
-            add => Printer.TextSegmentPrinted += value;
-            remove => Printer.TextSegmentPrinted -= value;
+            add => _printer.TextSegmentPrinted += value;
+            remove => _printer.TextSegmentPrinted -= value;
         }
 
         public FontSize TextSize
         {
-            get => Printer.TextSize;
-            set => Printer.TextSize = value;
+            get => _printer.TextSize;
+            set => _printer.TextSize = value;
         }
 
         public Color TextColor
         {
-            get => Printer.TextColor;
-            set => Printer.TextColor = value;
+            get => _printer.TextColor;
+            set => _printer.TextColor = value;
         }
 
         public string Text
         {
-            get => Printer.Text;
-            set => Printer.Text = value;
+            get => _printer.Text;
+            set => _printer.Text = value;
         }
 
         public float Delay
         {
-            get => Printer.Delay;
-            set => Printer.Delay = value;
+            get => _printer.Delay;
+            set => _printer.Delay = value;
         }
 
-        public async UniTask Print(string text, CancellationToken cancellationToken)
+        public async Task Print(string text, CancellationToken cancellationToken)
         {
-            if (this == null)
-                return;
-
             using var linkedCts =
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
 
-            await Printer.Print(text, linkedCts.Token);
+            await _printer.Print(text, linkedCts.Token);
         }
 
         public void Reset()
         {
-            Printer.Reset();
+            _printer.Reset();
         }
 
         public void SetActive(bool active)
         {
-            Printer.SetActive(active);
+            _printer.SetActive(active);
         }
     }
 }

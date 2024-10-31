@@ -2,73 +2,70 @@ namespace QuickEye.PeeDialog
 {
     using System;
     using System.Threading;
-    using Cysharp.Threading.Tasks;
+    using System.Threading.Tasks;
     using UnityEngine;
     using UnityEngine.UIElements;
 
     public class PrinterUitkComponent : MonoBehaviour, IPrinter
     {
         [SerializeField]
-        private UIDocument UiDocument;
+        private UIDocument _uiDocument;
 
         [SerializeField]
-        private PrinterUitk Printer = new PrinterUitk();
+        private PrinterUitk _printer = new PrinterUitk();
 
         private void OnEnable()
         {
-            Printer.TextWindow = UiDocument.rootVisualElement?.Q<VisualElement>("printer-window");
-            Printer.TextElement = UiDocument.rootVisualElement?.Q<TextElement>("printer-text");
+            _printer.TextWindow = _uiDocument.rootVisualElement?.Q<VisualElement>("printer-window");
+            _printer.TextElement = _uiDocument.rootVisualElement?.Q<TextElement>("printer-text");
         }
 
         public event Action TextSegmentPrinted
         {
-            add => Printer.TextSegmentPrinted += value;
-            remove => Printer.TextSegmentPrinted -= value;
+            add => _printer.TextSegmentPrinted += value;
+            remove => _printer.TextSegmentPrinted -= value;
         }
 
         public FontSize TextSize
         {
-            get => Printer.TextSize;
-            set => Printer.TextSize = value;
+            get => _printer.TextSize;
+            set => _printer.TextSize = value;
         }
 
         public Color TextColor
         {
-            get => Printer.TextColor;
-            set => Printer.TextColor = value;
+            get => _printer.TextColor;
+            set => _printer.TextColor = value;
         }
 
         public string Text
         {
-            get => Printer.Text;
-            set => Printer.Text = value;
+            get => _printer.Text;
+            set => _printer.Text = value;
         }
 
         public float Delay
         {
-            get => Printer.Delay;
-            set => Printer.Delay = value;
+            get => _printer.Delay;
+            set => _printer.Delay = value;
         }
 
-        public async UniTask Print(string text, CancellationToken cancellationToken)
+        public async Task Print(string text, CancellationToken cancellationToken)
         {
-            if (this == null)
-                return;
-
             using var linkedCts =
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, destroyCancellationToken);
 
-            await Printer.Print(text, linkedCts.Token);
+            await _printer.Print(text, linkedCts.Token);
         }
 
         public void Reset()
         {
-            Printer.Reset();
+            _printer.Reset();
         }
 
         public void SetActive(bool active)
         {
-            Printer.SetActive(active);
+            _printer.SetActive(active);
         }
     }
 }

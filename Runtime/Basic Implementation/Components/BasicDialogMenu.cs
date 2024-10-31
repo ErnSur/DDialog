@@ -1,9 +1,8 @@
 namespace QuickEye.PeeDialog
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using Cysharp.Threading.Tasks;
+    using System.Threading.Tasks;
     using UnityEngine;
     using UnityEngine.UI;
 
@@ -24,7 +23,7 @@ namespace QuickEye.PeeDialog
         private IReadOnlyList<string> _options;
         private int? _lastInput;
         
-        public async UniTask<int> Open(IReadOnlyList<string> options)
+        public async Task<int> Open(IReadOnlyList<string> options)
         {
             _options = options;
             Clear();
@@ -40,14 +39,14 @@ namespace QuickEye.PeeDialog
             }
             else
                 selector.SetActive(false);
-            await UniTask.WaitUntil(() => _lastInput.HasValue);
+            await AsyncUtils.WaitUntil(() => _lastInput.HasValue);
             return _lastInput!.Value;
         }
         
-        public UniTask Close()
+        public Task Close()
         {
             selector.SetActive(false);
-            return UniTask.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private void Clear()

@@ -3,7 +3,7 @@ namespace QuickEye.PeeDialog
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
-    using Cysharp.Threading.Tasks;
+    using System.Threading.Tasks;
     using UnityEngine;
 
     /// <summary>
@@ -21,7 +21,7 @@ namespace QuickEye.PeeDialog
 
         [SerializeField]
         private FontSize textSize;
-        
+
         public FontSize TextSize
         {
             get => textSize;
@@ -48,25 +48,62 @@ namespace QuickEye.PeeDialog
                                                             [CallerMemberName] string callerMemberName = "")
         {
             var source = new CancellationTokenSource();
-            UniTask.WaitUntil(() =>
-                              {
-                                  if (Input.GetMouseButtonDown(0) || Input.GetKey(KeyCode.Space))
-                                  {
-                                      //Debug.Log($"Skipped: {callerMemberName}");
-                                      source.Cancel();
-                                      source.Dispose();
-                                      return true;
-                                  }
-
-                                  return false;
-                              },
-                              cancellationToken: cancellationToken)
-                   .Forget();
+            CancelOnUserInput();
 
             return CancellationTokenSource.CreateLinkedTokenSource(source.Token, cancellationToken);
+
+            async void CancelOnUserInput()
+            {
+                try
+                {
+                    await Awaitable.NextFrameAsync(cancellationToken);
+                    while (!IsSkipButtonPressed())
+                    {
+                        await Awaitable.NextFrameAsync(cancellationToken);
+                    }
+                }
+                catch (OperationCanceledException) { }
+
+                //Debug.Log($"Skipped: {callerMemberName}");
+                source.Cancel();
+                source.Dispose();
+            }
+
+            static bool IsSkipButtonPressed() => Input.GetMouseButtonDown(0) || Input.GetKey(KeyCode.Space);
         }
 
-        public async UniTask Print(string text, CancellationToken cancellationToken)
+        public static async Awaitable WaitUntilSkip(CancellationToken cancellationToken,
+                                                              [CallerMemberName] string callerMemberName = "")
+        {
+            var source = new AwaitableCompletionSource();
+            CompleteOnUserInput();
+            await source.Awaitable;
+            return;
+
+            async void CompleteOnUserInput()
+            {
+                try
+                {
+                    while (!IsSkipButtonPressed())
+                    {
+                        await Awaitable.NextFrameAsync(cancellationToken);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.Log($"Skipped: {callerMemberName}");
+                    source.SetCanceled();
+                    return;
+                }
+
+                Debug.Log($"Skipped: {callerMemberName}");
+                source.SetResult();
+            }
+
+            static bool IsSkipButtonPressed() => Input.GetMouseButtonDown(0) || Input.GetKey(KeyCode.Space);
+        }
+
+        public async Task Print(string text, CancellationToken cancellationToken)
         {
             using var skipCts = CreateSkipCts(cancellationToken);
             for (int i = 0; i < text.Length; i++)
@@ -90,7 +127,7 @@ namespace QuickEye.PeeDialog
 
                 try
                 {
-                    await UniTask.WaitForSeconds(Delay, cancellationToken: skipCts.Token);
+                    await Awaitable.WaitForSecondsAsync(Delay, skipCts.Token);
                 }
                 catch (Exception e)
                 {

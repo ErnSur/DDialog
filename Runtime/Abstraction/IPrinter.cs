@@ -1,9 +1,8 @@
 namespace QuickEye.PeeDialog
 {
     using System;
-    using System.Text;
     using System.Threading;
-    using Cysharp.Threading.Tasks;
+    using System.Threading.Tasks;
     using UnityEngine;
 
     public interface IPrinter
@@ -21,7 +20,7 @@ namespace QuickEye.PeeDialog
         /// <summary>
         /// Prints Text to the screen
         /// </summary>
-        UniTask Print(string text, CancellationToken cancellationToken);
+        Task Print(string text, CancellationToken cancellationToken);
         
         /// <summary>
         /// Reset state to default values
