@@ -72,12 +72,13 @@ namespace QuickEye.PeeDialog
             static bool IsSkipButtonPressed() => Input.GetMouseButtonDown(0) || Input.GetKey(KeyCode.Space);
         }
 
-        public static AwaitableCompletionSource CreateSkipTsc(CancellationToken cancellationToken,
+        public static async Awaitable WaitUntilSkip(CancellationToken cancellationToken,
                                                               [CallerMemberName] string callerMemberName = "")
         {
             var source = new AwaitableCompletionSource();
             CompleteOnUserInput();
-            return source;
+            await source.Awaitable;
+            return;
 
             async void CompleteOnUserInput()
             {

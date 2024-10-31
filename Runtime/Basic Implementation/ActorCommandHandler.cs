@@ -27,8 +27,7 @@ namespace QuickEye.PeeDialog
         public async Task OnEnd(string[] args, CancellationToken cancellationToken)
         {
             await WaitUntilCooldown();
-            using var skipCts = BasicPrinter.CreateSkipCts(cancellationToken);
-            await AsyncUtils.WaitUntilCanceled(skipCts.Token);
+            await BasicPrinter.WaitUntilSkip(cancellationToken);
             
             _lastSkipTime = Time.unscaledTime;
             _printer.SetActive(false);
