@@ -6,14 +6,19 @@ namespace QuickEye.PeeDialog
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
-    using Cysharp.Threading.Tasks;
     using JetBrains.Annotations;
     using UnityEngine;
 
     // TODO: Maybe command text content should be passed here (use-case: note command handler can easily access the note text)
     // TODO: Should sync commands be supported?
-    public delegate UniTask CommandCallback(string[] args, CancellationToken cancellationToken);
+    public delegate Task CommandCallback(string[] args, CancellationToken cancellationToken);
 
+    public interface ICommandHandler
+    {
+        Task OnBegin(string[] args, CancellationToken cancellationToken);
+        Task OnEnd(string[] args, CancellationToken cancellationToken);
+    }
+    
     // Other names could be:
     // - ScriptRunner
     // - ScriptExecutor
@@ -27,6 +32,11 @@ namespace QuickEye.PeeDialog
         public void CancelExecution() 
         {
             _cancellationTokenSource?.Cancel();
+        }
+        
+        public void RegisterCommandHandler([NotNull] string commandName, [NotNull] ICommandHandler handler)
+        {
+            RegisterCommandCallback(commandName, handler.OnBegin, handler.OnEnd);
         }
 
         // TODO: Add support for floating point indexing
@@ -67,18 +77,18 @@ namespace QuickEye.PeeDialog
             RegisterCommandCallback(alias, BeginCommand, EndCommand);
             return;
 
-            async UniTask BeginCommand(string[] _, CancellationToken cancellationToken)
+            async Task BeginCommand(string[] _, CancellationToken cancellationToken)
             {
                 await ExecuteBegin(commandId, cancellationToken, commandArgs);
             }
 
-            async UniTask EndCommand(string[] _, CancellationToken cancellationToken)
+            async Task EndCommand(string[] _, CancellationToken cancellationToken)
             {
                 await ExecuteEnd(commandId, cancellationToken);
             }
         }
 
-        public async UniTask Execute(string script, CancellationToken cancellationToken = default)
+        public async Awaitable Execute(string script, CancellationToken cancellationToken = default)
         {
             using(_cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
             {
@@ -98,7 +108,11 @@ namespace QuickEye.PeeDialog
             await ExecuteCallbacks(new CommandTag(commandName, args), _commandCallbacks[commandName].EndCallback, cancellationToken);
         }
 
-        private async UniTask Execute(CommandTag commandTree, CancellationToken cancellationToken)
+        private async Awaitable ExecuteTest()
+        {
+            await Awaitable.WaitForSecondsAsync(4);
+        }
+        private async Awaitable Execute(CommandTag commandTree, CancellationToken cancellationToken)
         {
             _commandCallbacks.TryGetValue(commandTree.name, out var commandData);
 
@@ -112,7 +126,7 @@ namespace QuickEye.PeeDialog
                 await ExecuteCallbacks(commandTree, commandData.EndCallback, cancellationToken);
         }
 
-        private static async UniTask ExecuteCallbacks(CommandTag command, List<CommandCallback> callbacks,
+        private static async Awaitable ExecuteCallbacks(CommandTag command, List<CommandCallback> callbacks,
             CancellationToken cancellationToken)
         {
             foreach (var callback in callbacks)

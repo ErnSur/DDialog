@@ -4,7 +4,7 @@ namespace QuickEye.PeeDialog
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
-    using Cysharp.Threading.Tasks;
+    using System.Threading.Tasks;
     using JetBrains.Annotations;
     using UnityEngine;
 
@@ -35,24 +35,7 @@ namespace QuickEye.PeeDialog
 
         protected virtual void RegisterActor()
         {
-            var skipCooldown = TimeSpan.FromSeconds(0.15f);
-            var lastSkipTime = 0f;
-            CommandRunner.RegisterCommandCallback("actor",
-                                                  async (args, token) =>
-                                                  {
-                                                      Printer.Reset();
-                                                      Printer.SetActive(true);
-                                                  },
-                                                  async (args, token) =>
-                                                  {
-                                                      using var skipCts = BasicPrinter.CreateSkipCts(token);
-                                                        if (Time.unscaledTime - lastSkipTime < skipCooldown.TotalSeconds)
-                                                            await UniTask.Delay(TimeSpan.FromSeconds(skipCooldown.TotalSeconds - (Time.unscaledTime - lastSkipTime)));
-                                                      await UniTask.WaitUntilCanceled(skipCts.Token);
-                                                      lastSkipTime = Time.unscaledTime;
-                                                      Printer.SetActive(false);
-                                                      Printer.Reset();
-                                                  });
+            CommandRunner.RegisterCommandHandler("actor", new ActorCommandHandler(Printer));
         }
 
         protected virtual void RegisterClick()
@@ -61,7 +44,7 @@ namespace QuickEye.PeeDialog
                                                   async (args, token) =>
                                                   {
                                                       using var skipCts = BasicPrinter.CreateSkipCts(token);
-                                                      await UniTask.WaitUntilCanceled(skipCts.Token);
+                                                      await AsyncUtils.WaitUntilCanceled(skipCts.Token);
                                                   });
         }
 
@@ -84,8 +67,8 @@ namespace QuickEye.PeeDialog
                                                           return;
 
                                                       using var skipCts = BasicPrinter.CreateSkipCts(token);
-                                                      await UniTask.Delay(TimeSpan.FromSeconds(waitTime),
-                                                                          cancellationToken: skipCts.Token);
+                                                      await AsyncUtils.Delay(TimeSpan.FromSeconds(waitTime),
+                                                                             cancellationToken: skipCts.Token);
                                                   });
         }
 
@@ -96,7 +79,7 @@ namespace QuickEye.PeeDialog
             CommandRunner.RegisterCommandCallback("speed", BeginCallback, EndCallback);
             return;
 
-            UniTask BeginCallback(string[] args, CancellationToken token)
+            Task BeginCallback(string[] args, CancellationToken token)
             {
                 var speedArg = args.FirstOrDefault();
 
@@ -109,13 +92,13 @@ namespace QuickEye.PeeDialog
 
                 previousDelays.Push(Printer.Delay);
                 Printer.Delay = newSpeed;
-                return UniTask.CompletedTask;
+                return Task.CompletedTask;
             }
 
-            UniTask EndCallback(string[] args, CancellationToken token)
+            Task EndCallback(string[] args, CancellationToken token)
             {
                 Printer.Delay = previousDelays.Pop();
-                return UniTask.CompletedTask;
+                return Task.CompletedTask;
             }
         }
 

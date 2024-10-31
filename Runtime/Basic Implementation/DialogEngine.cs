@@ -1,11 +1,12 @@
 namespace QuickEye.PeeDialog
 {
     using System.Threading;
-    using Cysharp.Threading.Tasks;
+    using UnityEngine;
 
     public class DialogEngine
     {
         public CommandRunner CommandRunner { get; } = new CommandRunner();
+
         protected readonly IPrinter Printer;
 
         public DialogEngine(IPrinter printer)
@@ -24,7 +25,7 @@ namespace QuickEye.PeeDialog
             new ActorCommandsHandler(CommandRunner, actorManager);
         }
 
-        public async UniTask Print(string script,CancellationToken cancellationToken=default)
+        public async Awaitable Print(string script, CancellationToken cancellationToken = default)
         {
             await CommandRunner.Execute(script, cancellationToken);
         }
